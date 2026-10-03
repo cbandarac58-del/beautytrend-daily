@@ -1,10 +1,10 @@
-name: Test Astro Article Creation
+name: Test Full Astro Article
 
 on:
   workflow_dispatch:
 
 jobs:
-  create-post:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,32 +16,62 @@ jobs:
         with:
           node-version: 22
 
-      - name: Check generated article
+      - name: Install Gemini SDK
+        run: npm install @google/genai
+
+      - name: Generate article and YouTube data
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: node scripts/build-article.mjs
+
+      - name: Verify generated article JSON
         run: |
           if [ ! -f "generated/article.json" ]; then
-            echo "generated/article.json does not exist."
-            echo "Run Test Full Beauty Article first."
+            echo "ERROR: generated/article.json was not created."
             exit 1
           fi
+
+          echo "generated/article.json exists."
+          echo "File size:"
+          wc -c generated/article.json
 
       - name: Create Astro article
         run: node scripts/create-astro-post.mjs
 
-      - name: Show created article
+      - name: Verify Astro article
         run: |
           echo "================================="
           echo "GENERATED ASTRO FILES"
           echo "================================="
-          find src/content/articles -type f -maxdepth 1 -print
+
+          find src/content/articles -maxdepth 1 -type f -print
+
+          FILE=$(find src/content/articles -maxdepth 1 -type f | head -n 1)
+
+          if [ -z "$FILE" ]; then
+            echo "ERROR: No Astro article was created."
+            exit 1
+          fi
+
+          echo ""
+          echo "================================="
+          echo "ARTICLE FILE"
+          echo "================================="
+          echo "$FILE"
 
           echo ""
           echo "================================="
           echo "ARTICLE PREVIEW"
           echo "================================="
 
-          FILE=$(find src/content/articles -type f -maxdepth 1 | head -n 1)
+          sed -n '1,50p' "$FILE"
 
-          sed -n '1,35p' "$FILE"
+      - name: Upload generated article JSON
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-article-json
+          path: generated/article.json
 
       - name: Upload Astro article
         uses: actions/upload-artifact@v4
