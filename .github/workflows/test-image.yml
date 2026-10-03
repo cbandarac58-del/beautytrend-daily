@@ -28,4 +28,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: beauty-test-image
-          path: test-images/pixie-test.png
+          path: test-images/pixie-test.jpg
