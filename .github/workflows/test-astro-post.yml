@@ -1,0 +1,50 @@
+name: Test Astro Article Creation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-post:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check generated article
+        run: |
+          if [ ! -f "generated/article.json" ]; then
+            echo "generated/article.json does not exist."
+            echo "Run Test Full Beauty Article first."
+            exit 1
+          fi
+
+      - name: Create Astro article
+        run: node scripts/create-astro-post.mjs
+
+      - name: Show created article
+        run: |
+          echo "================================="
+          echo "GENERATED ASTRO FILES"
+          echo "================================="
+          find src/content/articles -type f -maxdepth 1 -print
+
+          echo ""
+          echo "================================="
+          echo "ARTICLE PREVIEW"
+          echo "================================="
+
+          FILE=$(find src/content/articles -type f -maxdepth 1 | head -n 1)
+
+          sed -n '1,35p' "$FILE"
+
+      - name: Upload Astro article
+        uses: actions/upload-artifact@v4
+        with:
+          name: astro-article-test
+          path: src/content/articles/*.md
