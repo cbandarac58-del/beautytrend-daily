@@ -1,0 +1,32 @@
+name: Test Full Beauty Article
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-article:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Gemini SDK
+        run: npm install @google/genai
+
+      - name: Build complete article
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: node scripts/build-article.mjs
+
+      - name: Upload generated article
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-beauty-article
+          path: generated/article.json
