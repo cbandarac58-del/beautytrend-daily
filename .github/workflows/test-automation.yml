@@ -1,0 +1,31 @@
+name: BeautyTrend Automation Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Gemini secret
+        run: |
+          if [ -z "${{ secrets.GEMINI_API_KEY }}" ]; then
+            echo "GEMINI_API_KEY is missing"
+            exit 1
+          fi
+          echo "GEMINI_API_KEY is configured"
+
+      - name: Check YouTube secret
+        run: |
+          if [ -z "${{ secrets.YOUTUBE_API_KEY }}" ]; then
+            echo "YOUTUBE_API_KEY is missing"
+            exit 1
+          fi
+          echo "YOUTUBE_API_KEY is configured"
+
+      - name: Automation test complete
+        run: echo "BeautyTrend automation foundation is ready!"
