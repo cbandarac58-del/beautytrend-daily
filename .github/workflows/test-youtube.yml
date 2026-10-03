@@ -1,0 +1,23 @@
+name: Test YouTube Search
+
+on:
+  workflow_dispatch:
+
+jobs:
+  youtube-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Search YouTube videos
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          VIDEO_TOPIC: "pixie haircut trends 2026"
+        run: node scripts/youtube.mjs
