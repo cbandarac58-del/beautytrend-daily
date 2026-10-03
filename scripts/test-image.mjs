@@ -16,26 +16,46 @@ Create a high-quality editorial beauty magazine photograph
 for an article about 2026 women's short haircut trends.
 
 Show a stylish adult woman with a modern textured pixie haircut.
-Natural realistic hair texture, professional salon photography,
-soft studio lighting, clean elegant background,
-photorealistic, premium beauty magazine aesthetic.
 
-No text, no logos, no watermark-like graphics.
+Visual requirements:
+- Photorealistic
+- Professional salon photography
+- Natural-looking hair texture
+- Modern fashionable haircut
+- Soft studio lighting
+- Clean elegant background
+- Premium international beauty magazine aesthetic
+- Realistic skin and hair
+- Composition suitable for a website article
+- Wide 16:9 composition
+
+Do not include:
+- Text
+- Logos
+- Brand names
+- Watermarks
+- Collages
+- Borders
+- Graphic overlays
 `;
+
+console.log("=================================");
+console.log("STARTING GEMINI IMAGE GENERATION");
+console.log("=================================");
 
 const interaction = await ai.interactions.create({
   model: "gemini-3.1-flash-image",
   input: prompt,
   response_format: {
     type: "image",
-    mime_type: "image/png",
+    mime_type: "image/jpeg",
     aspect_ratio: "16:9",
     image_size: "1K"
   }
 });
 
 if (!interaction.output_image?.data) {
-  throw new Error("Gemini returned no image");
+  throw new Error("Gemini returned no image data");
 }
 
 const imageBuffer = Buffer.from(
@@ -43,14 +63,20 @@ const imageBuffer = Buffer.from(
   "base64"
 );
 
-fs.mkdirSync("test-images", { recursive: true });
+fs.mkdirSync("test-images", {
+  recursive: true
+});
+
+const outputPath = "test-images/pixie-test.jpg";
 
 fs.writeFileSync(
-  "test-images/pixie-test.png",
+  outputPath,
   imageBuffer
 );
 
 console.log("=================================");
 console.log("IMAGE GENERATED SUCCESSFULLY");
 console.log("=================================");
-console.log("Saved: test-images/pixie-test.png");
+console.log(`Saved: ${outputPath}`);
+console.log(`File size: ${imageBuffer.length} bytes`);
+console.log("=================================");
