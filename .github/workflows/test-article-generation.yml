@@ -1,0 +1,47 @@
+name: Test Article Generation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Research beauty trend
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          node scripts/research.mjs > research-output.txt
+
+      - name: Prepare research data
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          text = Path("research-output.txt").read_text()
+
+          start = text.find("BEAUTY RESEARCH RESULT")
+          end = text.find("RESEARCH COMPLETE")
+
+          if start != -1 and end != -1:
+              text = text[start + len("BEAUTY RESEARCH RESULT"):end]
+
+          Path("research-data.txt").write_text(text.strip())
+          PY
+
+      - name: Generate article
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          RESEARCH_DATA: ${{ '' }}
+        run: |
+          export RESEARCH_DATA="$(cat research-data.txt)"
+          node scripts/generate-article.mjs
