@@ -1,0 +1,31 @@
+name: Test Gemini Image Generation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  image-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Gemini SDK
+        run: npm install @google/genai
+
+      - name: Generate test image
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node scripts/test-image.mjs
+
+      - name: Upload generated image
+        uses: actions/upload-artifact@v4
+        with:
+          name: beauty-test-image
+          path: test-images/pixie-test.png
