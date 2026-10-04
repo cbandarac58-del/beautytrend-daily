@@ -11,9 +11,9 @@ if (!youtubeKey) {
   throw new Error("YOUTUBE_API_KEY is not configured");
 }
 
-// --------------------------------------------------
+// ==================================================
 // CONFIG
-// --------------------------------------------------
+// ==================================================
 
 const GEMINI_MODEL = "gemini-2.5-flash";
 
@@ -38,11 +38,11 @@ console.log("AUTOMATIC BEAUTY ARTICLE");
 console.log("=================================");
 console.log(`Topic: ${topic}`);
 
-// --------------------------------------------------
+// ==================================================
 // HELPERS
-// --------------------------------------------------
+// ==================================================
 
-function cleanMarkdownCodeFence(text) {
+function cleanCodeFence(text) {
   return String(text ?? "")
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
@@ -51,16 +51,16 @@ function cleanMarkdownCodeFence(text) {
 }
 
 function extractJsonObject(text) {
-  const cleaned = cleanMarkdownCodeFence(text);
+  const cleaned = cleanCodeFence(text);
 
-  // First attempt: direct JSON
+  // Direct JSON parse
   try {
     return JSON.parse(cleaned);
   } catch {
-    // Continue to extraction
+    // Continue
   }
 
-  // Find first { and last }
+  // Find JSON object inside extra text
   const firstBrace = cleaned.indexOf("{");
   const lastBrace = cleaned.lastIndexOf("}");
 
@@ -101,12 +101,15 @@ async function callGemini({
     ]
   };
 
-  if (jsonMode) {
+  // IMPORTANT:
+  // JSON mode is only used when Google Search is NOT enabled.
+  if (jsonMode && !useSearch) {
     body.generationConfig = {
       responseMimeType: "application/json"
     };
   }
 
+  // Google Search
   if (useSearch) {
     body.tools = [
       {
@@ -127,21 +130,21 @@ async function callGemini({
     }
   );
 
-  const text = await response.text();
+  const responseText = await response.text();
 
   if (!response.ok) {
     throw new Error(
-      `Gemini API error: ${response.status}\n${text}`
+      `Gemini API error: ${response.status}\n${responseText}`
     );
   }
 
   let data;
 
   try {
-    data = JSON.parse(text);
+    data = JSON.parse(responseText);
   } catch {
     throw new Error(
-      `Gemini returned invalid API JSON:\n${text}`
+      `Gemini API returned invalid JSON:\n${responseText}`
     );
   }
 
@@ -152,7 +155,8 @@ async function callGemini({
 
   if (!output) {
     const finishReason =
-      data?.candidates?.[0]?.finishReason || "UNKNOWN";
+      data?.candidates?.[0]?.finishReason ||
+      "UNKNOWN";
 
     throw new Error(
       `No Gemini content returned. Finish reason: ${finishReason}`
@@ -162,9 +166,9 @@ async function callGemini({
   return output;
 }
 
-// --------------------------------------------------
+// ==================================================
 // 1. RESEARCH
-// --------------------------------------------------
+// ==================================================
 
 const researchPrompt = `
 Research the following beauty topic using current web information:
@@ -186,7 +190,11 @@ Focus on:
 
 Do not copy source articles.
 
-Return ONLY valid JSON matching this exact structure:
+Return ONLY valid JSON.
+
+Do not use Markdown code fences.
+
+Use exactly this structure:
 
 {
   "topic": "",
@@ -201,25 +209,36 @@ Return ONLY valid JSON matching this exact structure:
 }
 `;
 
-console.log("\nResearching web information...");
+console.log("");
+console.log("Researching web information...");
 
 let researchText;
 
 try {
   researchText = await callGemini({
     prompt: researchPrompt,
+
+    // Google Search ON
     useSearch: true,
-    jsonMode: true
+
+    // IMPORTANT:
+    // JSON mode OFF because Search + JSON mode
+    // causes Gemini 400 error.
+    jsonMode: false
   });
 } catch (error) {
-  console.error("\nResearch failed.");
+  console.error("");
+  console.error("Research failed.");
   throw error;
 }
 
-const research = extractJsonObject(researchText);
+const research = extractJsonObject(
+  researchText
+);
 
 if (!research) {
-  console.error("\nRAW RESEARCH RESPONSE:");
+  console.error("");
+  console.error("RAW RESEARCH RESPONSE:");
   console.error(researchText);
 
   throw new Error(
@@ -229,14 +248,14 @@ if (!research) {
 
 console.log("Research completed.");
 
-// --------------------------------------------------
+// ==================================================
 // 2. ARTICLE GENERATION
-// --------------------------------------------------
+// ==================================================
 
 const articlePrompt = `
 You are the senior editor of a modern international beauty magazine.
 
-Create a completely original article based on the research below.
+Create a completely original article using the research below.
 
 TOPIC:
 ${topic}
@@ -247,8 +266,9 @@ ARTICLE REQUIREMENTS:
 - Natural human editorial writing
 - Original wording
 - Useful and informative
-- Mobile-friendly structure
+- Mobile-friendly
 - Clear headings
+- Short paragraphs
 - No keyword stuffing
 - No invented statistics
 - No invented quotes
@@ -261,8 +281,8 @@ SEO REQUIREMENTS:
 
 - Attractive SEO title
 - URL-friendly slug
-- Meta description between approximately 150 and 160 characters
-- 5 to 10 relevant keywords
+- Meta description approximately 150-160 characters
+- 5-10 relevant keywords
 - Short excerpt
 - Appropriate beauty category
 
@@ -276,18 +296,19 @@ STRUCTURE:
 - Final thoughts
 - 4 useful FAQs
 
-The "content" field MUST contain Markdown.
+The content field MUST contain Markdown.
 
 IMPORTANT JSON RULES:
 
 - Return ONLY valid JSON.
-- Do not use Markdown code fences.
-- Do not add explanations before or after the JSON.
-- Properly escape all quotation marks inside strings.
+- Do NOT use Markdown code fences.
+- Do NOT add explanations before or after JSON.
+- Properly escape quotation marks inside strings.
 - Properly escape newline characters.
-- Make sure the final response can be parsed directly with JSON.parse().
+- Make sure every JSON string is correctly closed.
+- Make sure the result can be parsed directly by JSON.parse().
 
-Return exactly this structure:
+Return exactly:
 
 {
   "title": "",
@@ -306,6 +327,7 @@ Return exactly this structure:
 }
 
 RESEARCH:
+
 ${JSON.stringify(research)}
 `;
 
@@ -316,22 +338,35 @@ let articleText;
 try {
   articleText = await callGemini({
     prompt: articlePrompt,
+
+    // No Search here
+    useSearch: false,
+
+    // JSON mode ON
     jsonMode: true
   });
 } catch (error) {
-  console.error("\nArticle generation failed.");
+  console.error("");
+  console.error("Article generation failed.");
   throw error;
 }
 
-let article = extractJsonObject(articleText);
+// ==================================================
+// 3. PARSE ARTICLE JSON
+// ==================================================
+
+let article = extractJsonObject(
+  articleText
+);
 
 if (!article) {
+  console.log("");
   console.log(
     "First article JSON parsing failed."
   );
 
   console.log(
-    "Attempting one automatic JSON repair..."
+    "Attempting automatic JSON repair..."
   );
 
   const repairPrompt = `
@@ -340,13 +375,14 @@ Repair the following malformed JSON.
 Return ONLY valid JSON.
 
 Rules:
+
 - Preserve the article content.
 - Do not shorten the article.
 - Do not rewrite the article unnecessarily.
-- Correct invalid quotation marks.
-- Correct invalid newline characters.
-- Correct invalid escape sequences.
-- Ensure all strings are properly closed.
+- Fix invalid quotation marks.
+- Fix invalid newline characters.
+- Fix invalid escape sequences.
+- Make sure every string is properly closed.
 - Do not use Markdown code fences.
 - Do not add commentary.
 
@@ -360,23 +396,35 @@ ${articleText}
   try {
     repairedText = await callGemini({
       prompt: repairPrompt,
+      useSearch: false,
       jsonMode: true
     });
   } catch (error) {
+    console.error("");
     console.error(
-      "\nJSON repair request failed."
+      "JSON repair request failed."
     );
 
     throw error;
   }
 
-  article = extractJsonObject(repairedText);
+  article = extractJsonObject(
+    repairedText
+  );
 
   if (!article) {
-    console.error("\nORIGINAL ARTICLE RESPONSE:");
+    console.error("");
+    console.error(
+      "ORIGINAL ARTICLE RESPONSE:"
+    );
+
     console.error(articleText);
 
-    console.error("\nREPAIRED ARTICLE RESPONSE:");
+    console.error("");
+    console.error(
+      "REPAIRED ARTICLE RESPONSE:"
+    );
+
     console.error(repairedText);
 
     throw new Error(
@@ -389,29 +437,44 @@ ${articleText}
   );
 }
 
+// ==================================================
+// 4. VALIDATE ARTICLE
+// ==================================================
+
 if (
   !article.title ||
   !article.slug ||
+  !article.description ||
   !article.content
 ) {
+  console.error(
+    JSON.stringify(article, null, 2)
+  );
+
   throw new Error(
     "Article JSON is missing required fields"
   );
+}
+
+if (!Array.isArray(article.keywords)) {
+  article.keywords = [];
+}
+
+if (!Array.isArray(article.faq)) {
+  article.faq = [];
 }
 
 console.log(
   `Article title: ${article.title}`
 );
 
-// --------------------------------------------------
-// 3. YOUTUBE SEARCH
-// --------------------------------------------------
+// ==================================================
+// 5. YOUTUBE SEARCH
+// ==================================================
 
 const searchTerms = [
   article.title,
-  ...(Array.isArray(article.keywords)
-    ? article.keywords.slice(0, 3)
-    : [])
+  ...article.keywords.slice(0, 3)
 ];
 
 const youtubeQuery =
@@ -505,9 +568,9 @@ console.log(
   `YouTube videos found: ${videos.length}`
 );
 
-// --------------------------------------------------
-// 4. FINAL DATA
-// --------------------------------------------------
+// ==================================================
+// 6. FINAL ARTICLE DATA
+// ==================================================
 
 const output = {
   generatedAt:
@@ -521,6 +584,10 @@ const output = {
 
   youtube: videos
 };
+
+// ==================================================
+// 7. SAVE
+// ==================================================
 
 fs.mkdirSync(
   "generated",
@@ -539,12 +606,13 @@ fs.writeFileSync(
   "utf8"
 );
 
-// --------------------------------------------------
-// 5. FINAL LOG
-// --------------------------------------------------
+// ==================================================
+// 8. SUCCESS
+// ==================================================
 
+console.log("");
 console.log(
-  "\n================================="
+  "================================="
 );
 
 console.log(
@@ -568,11 +636,7 @@ console.log(
 );
 
 console.log(
-  `Keywords: ${
-    Array.isArray(article.keywords)
-      ? article.keywords.join(", ")
-      : ""
-  }`
+  `Keywords: ${article.keywords.join(", ")}`
 );
 
 console.log(
