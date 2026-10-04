@@ -1,43 +1,163 @@
 ---
+import { getCollection } from "astro:content";
+
 const categories = [
-  'Haircuts',
-  'Hairstyles',
-  'Hair Color',
-  'Nail Styles',
-  'Nail Art',
-  'Beauty Trends'
+  "Haircuts",
+  "Hairstyles",
+  "Hair Color",
+  "Nail Styles",
+  "Nail Art",
+  "Beauty Trends"
 ];
+
+const articles = (await getCollection("articles"))
+  .sort((a, b) => {
+    const dateA = new Date(a.data.publishedAt).getTime();
+    const dateB = new Date(b.data.publishedAt).getTime();
+
+    return dateB - dateA;
+  });
+
+const latestArticles = articles.slice(0, 12);
+
+const siteTitle =
+  "BeautyTrend Daily — Hair, Nails & Beauty Inspiration";
+
+const siteDescription =
+  "Discover the latest haircut trends, hairstyles, hair colors, nail art, manicure ideas and beauty trends with practical inspiration and expert-style guides.";
+
+const siteUrl = "https://beautytrend-daily.pages.dev";
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+
     <meta
       name="description"
-      content="The latest haircut, hairstyle, nail and beauty trends, ideas and inspiration."
+      content={siteDescription}
     />
-    <title>BeautyTrend Daily — Hair, Nails & Beauty Inspiration</title>
+
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large"
+    />
+
+    <link
+      rel="canonical"
+      href={siteUrl}
+    />
+
+    <meta
+      property="og:type"
+      content="website"
+    />
+
+    <meta
+      property="og:title"
+      content={siteTitle}
+    />
+
+    <meta
+      property="og:description"
+      content={siteDescription}
+    />
+
+    <meta
+      property="og:url"
+      content={siteUrl}
+    />
+
+    <meta
+      name="twitter:card"
+      content="summary_large_image"
+    />
+
+    <meta
+      name="twitter:title"
+      content={siteTitle}
+    />
+
+    <meta
+      name="twitter:description"
+      content={siteDescription}
+    />
+
+    <title>{siteTitle}</title>
+
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "BeautyTrend Daily",
+      url: siteUrl,
+      description: siteDescription
+    })} />
+
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "BeautyTrend Daily",
+      description: siteDescription,
+      url: siteUrl
+    })} />
   </head>
 
   <body>
-    <header class="header">
-      <div class="container nav">
-        <a href="/" class="logo">BeautyTrend<span>Daily</span></a>
 
-        <nav>
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="header">
+
+      <div class="container nav">
+
+        <a
+          href="/"
+          class="logo"
+          aria-label="BeautyTrend Daily homepage"
+        >
+          BeautyTrend<span>Daily</span>
+        </a>
+
+        <nav aria-label="Main navigation">
+
+          <a href="#latest">Latest</a>
+
           {categories.map((category) => (
-            <a href="#">{category}</a>
+            <a
+              href={`/#${category.toLowerCase().replace(/\s+/g, "-")}`}
+            >
+              {category}
+            </a>
           ))}
+
         </nav>
+
       </div>
+
     </header>
 
+
+    <!-- =========================
+         HERO
+    ========================== -->
+
     <main>
+
       <section class="hero">
-        <div class="container">
-          <p class="eyebrow">BEAUTY • HAIR • NAILS</p>
+
+        <div class="container hero-inner">
+
+          <p class="eyebrow">
+            BEAUTY • HAIR • NAILS
+          </p>
 
           <h1>
             Discover Your Next
@@ -45,47 +165,305 @@ const categories = [
           </h1>
 
           <p class="intro">
-            Fresh ideas, trending hairstyles, beautiful nail designs,
-            haircut inspiration and beauty guides — all in one place.
+            Discover the latest haircut trends, hairstyles,
+            hair colors, nail art ideas and beauty inspiration.
+            Fresh guides and trend-focused articles are published
+            regularly.
           </p>
 
-          <a href="#latest" class="button">Explore Latest Trends</a>
+          <a
+            href="#latest"
+            class="button"
+          >
+            Explore Latest Trends
+          </a>
+
         </div>
+
       </section>
 
-      <section id="latest" class="latest">
+
+      <!-- =========================
+           LATEST ARTICLES
+      ========================== -->
+
+      <section
+        id="latest"
+        class="latest"
+      >
+
         <div class="container">
+
           <div class="section-heading">
-            <p class="eyebrow">LATEST</p>
-            <h2>Fresh Beauty Inspiration</h2>
-            <p>
-              New beauty articles, ideas and trends will appear here
-              automatically.
+
+            <p class="eyebrow">
+              LATEST
             </p>
+
+            <h2>
+              Fresh Beauty Inspiration
+            </h2>
+
+            <p>
+              Explore the newest beauty trends, hairstyle ideas,
+              haircut inspiration, nail designs and practical
+              beauty guides.
+            </p>
+
           </div>
 
-          <div class="empty-card">
-            <div class="icon">✦</div>
-            <h3>Coming Soon</h3>
-            <p>
-              Our automatic beauty magazine system is being built.
-              New articles will soon be published every day.
-            </p>
-          </div>
+
+          {latestArticles.length > 0 ? (
+
+            <div class="article-grid">
+
+              {latestArticles.map((article) => (
+
+                <article class="article-card">
+
+                  <a
+                    href={`/articles/${article.slug}/`}
+                    class="article-link"
+                  >
+
+                    <div class="article-content">
+
+                      <div class="article-category">
+                        {article.data.category}
+                      </div>
+
+                      <h3>
+                        {article.data.title}
+                      </h3>
+
+                      <p class="article-excerpt">
+                        {
+                          article.data.excerpt ||
+                          article.data.description
+                        }
+                      </p>
+
+                      <div class="article-meta">
+
+                        <span>
+                          {new Date(
+                            article.data.publishedAt
+                          ).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric"
+                            }
+                          )}
+                        </span>
+
+                        <span class="read-more">
+                          Read Article →
+                        </span>
+
+                      </div>
+
+                    </div>
+
+                  </a>
+
+                </article>
+
+              ))}
+
+            </div>
+
+          ) : (
+
+            <div class="empty-card">
+
+              <div class="icon">
+                ✦
+              </div>
+
+              <h3>
+                New Beauty Articles Coming Soon
+              </h3>
+
+              <p>
+                Our beauty magazine is getting ready.
+                New haircut, hairstyle, nail and beauty
+                trend articles will appear here automatically.
+              </p>
+
+            </div>
+
+          )}
+
         </div>
+
       </section>
+
+
+      <!-- =========================
+           BEAUTY CATEGORIES
+      ========================== -->
+
+      <section class="categories">
+
+        <div class="container">
+
+          <div class="section-heading">
+
+            <p class="eyebrow">
+              EXPLORE
+            </p>
+
+            <h2>
+              Beauty Categories
+            </h2>
+
+            <p>
+              Find inspiration across hair, nails and beauty trends.
+            </p>
+
+          </div>
+
+
+          <div class="category-grid">
+
+            <a
+              id="haircuts"
+              href="#latest"
+              class="category-card"
+            >
+              <span>✂</span>
+              <strong>Haircuts</strong>
+              <small>
+                Modern haircut ideas and trends
+              </small>
+            </a>
+
+
+            <a
+              id="hairstyles"
+              href="#latest"
+              class="category-card"
+            >
+              <span>♡</span>
+              <strong>Hairstyles</strong>
+              <small>
+                Trending styles and inspiration
+              </small>
+            </a>
+
+
+            <a
+              id="hair-color"
+              href="#latest"
+              class="category-card"
+            >
+              <span>◉</span>
+              <strong>Hair Color</strong>
+              <small>
+                New colors and salon inspiration
+              </small>
+            </a>
+
+
+            <a
+              id="nail-styles"
+              href="#latest"
+              class="category-card"
+            >
+              <span>◇</span>
+              <strong>Nail Styles</strong>
+              <small>
+                Elegant manicure and nail ideas
+              </small>
+            </a>
+
+
+            <a
+              id="nail-art"
+              href="#latest"
+              class="category-card"
+            >
+              <span>✦</span>
+              <strong>Nail Art</strong>
+              <small>
+                Creative nail art inspiration
+              </small>
+            </a>
+
+
+            <a
+              id="beauty-trends"
+              href="#latest"
+              class="category-card"
+            >
+              <span>✧</span>
+              <strong>Beauty Trends</strong>
+              <small>
+                The latest beauty movements
+              </small>
+            </a>
+
+          </div>
+
+        </div>
+
+      </section>
+
     </main>
 
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
     <footer>
-      <div class="container">
-        <strong>BeautyTrend Daily</strong>
-        <p>Hair, nails, beauty trends and inspiration.</p>
+
+      <div class="container footer-inner">
+
+        <div>
+
+          <strong>
+            BeautyTrend Daily
+          </strong>
+
+          <p>
+            Hair, nails, beauty trends and inspiration.
+          </p>
+
+        </div>
+
+        <div class="footer-links">
+
+          <a href="/">
+            Home
+          </a>
+
+          <a href="#latest">
+            Latest
+          </a>
+
+          <a href="/sitemap-index.xml">
+            Sitemap
+          </a>
+
+        </div>
+
       </div>
+
     </footer>
+
   </body>
 </html>
 
+
 <style>
+
+  /* =========================
+     GLOBAL
+  ========================== */
+
   :global(*) {
     box-sizing: border-box;
   }
@@ -96,40 +474,82 @@ const categories = [
 
   :global(body) {
     margin: 0;
+
     font-family:
-      Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-      "Segoe UI", sans-serif;
+      Inter,
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+
     background: #faf8f7;
+
     color: #211d1d;
   }
 
+
+  /* =========================
+     CONTAINER
+  ========================== */
+
   .container {
-    width: min(1120px, calc(100% - 40px));
+    width: min(
+      1120px,
+      calc(100% - 40px)
+    );
+
     margin: 0 auto;
   }
 
+
+  /* =========================
+     HEADER
+  ========================== */
+
   .header {
-    background: rgba(255, 255, 255, 0.96);
+    background: rgba(
+      255,
+      255,
+      255,
+      0.96
+    );
+
     border-bottom: 1px solid #eee7e5;
+
     position: sticky;
+
     top: 0;
-    z-index: 10;
+
+    z-index: 50;
+
+    backdrop-filter: blur(12px);
   }
 
   .nav {
     min-height: 72px;
+
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
+
     gap: 30px;
   }
 
   .logo {
     color: #211d1d;
+
     text-decoration: none;
+
     font-size: 23px;
+
     font-weight: 800;
+
     letter-spacing: -0.7px;
+
     white-space: nowrap;
   }
 
@@ -139,71 +559,138 @@ const categories = [
 
   nav {
     display: flex;
+
     gap: 20px;
+
     overflow-x: auto;
+
+    scrollbar-width: none;
+  }
+
+  nav::-webkit-scrollbar {
+    display: none;
   }
 
   nav a {
     color: #6c6260;
+
     text-decoration: none;
+
     font-size: 14px;
+
     white-space: nowrap;
+
+    padding: 8px 0;
   }
 
   nav a:hover {
     color: #211d1d;
   }
 
+
+  /* =========================
+     HERO
+  ========================== */
+
   .hero {
     padding: 110px 0 120px;
+
     background:
-      radial-gradient(circle at 85% 20%, #ead9d7 0, transparent 28%),
-      radial-gradient(circle at 15% 80%, #eee2dd 0, transparent 30%);
+      radial-gradient(
+        circle at 85% 20%,
+        #ead9d7 0,
+        transparent 28%
+      ),
+      radial-gradient(
+        circle at 15% 80%,
+        #eee2dd 0,
+        transparent 30%
+      );
   }
 
-  .hero .container {
+  .hero-inner {
     max-width: 900px;
   }
 
   .eyebrow {
     margin: 0 0 18px;
+
     font-size: 12px;
+
     font-weight: 800;
+
     letter-spacing: 2.5px;
+
     color: #88716c;
   }
 
   h1 {
     max-width: 800px;
+
     margin: 0;
-    font-size: clamp(48px, 8vw, 88px);
+
+    font-size:
+      clamp(
+        48px,
+        8vw,
+        88px
+      );
+
     line-height: 0.98;
+
     letter-spacing: -4px;
   }
 
   h1 span {
     display: block;
+
     font-weight: 400;
   }
 
   .intro {
-    max-width: 650px;
+    max-width: 680px;
+
     margin: 30px 0;
+
     color: #6c6260;
+
     font-size: 18px;
+
     line-height: 1.7;
   }
 
   .button {
     display: inline-block;
+
     padding: 14px 22px;
+
     background: #211d1d;
+
     color: white;
+
     text-decoration: none;
-    border-radius: 4px;
+
+    border-radius: 5px;
+
     font-size: 14px;
+
     font-weight: 700;
+
+    transition:
+      transform 0.2s ease,
+      opacity 0.2s ease;
   }
+
+  .button:hover {
+    transform: translateY(-2px);
+
+    opacity: 0.9;
+  }
+
+
+  /* =========================
+     LATEST
+  ========================== */
 
   .latest {
     padding: 90px 0;
@@ -215,70 +702,410 @@ const categories = [
 
   h2 {
     margin: 0 0 12px;
-    font-size: clamp(32px, 5vw, 50px);
+
+    font-size:
+      clamp(
+        32px,
+        5vw,
+        50px
+      );
+
     letter-spacing: -2px;
   }
 
   .section-heading > p:last-child {
     margin: 0;
+
+    max-width: 700px;
+
     color: #746b69;
+
+    line-height: 1.7;
   }
+
+
+  /* =========================
+     ARTICLE GRID
+  ========================== */
+
+  .article-grid {
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+
+    gap: 24px;
+  }
+
+  .article-card {
+    background: white;
+
+    border: 1px solid #e8dfdc;
+
+    border-radius: 12px;
+
+    overflow: hidden;
+
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .article-card:hover {
+    transform: translateY(-4px);
+
+    box-shadow:
+      0 15px 35px
+      rgba(50, 30, 25, 0.08);
+  }
+
+  .article-link {
+    display: block;
+
+    color: inherit;
+
+    text-decoration: none;
+  }
+
+  .article-content {
+    padding: 28px;
+  }
+
+  .article-category {
+    margin-bottom: 13px;
+
+    color: #88716c;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 1.5px;
+
+    text-transform: uppercase;
+  }
+
+  .article-card h3 {
+    margin: 0 0 14px;
+
+    font-size: 23px;
+
+    line-height: 1.35;
+
+    letter-spacing: -0.5px;
+  }
+
+  .article-excerpt {
+    margin: 0;
+
+    color: #746b69;
+
+    font-size: 15px;
+
+    line-height: 1.7;
+
+    display: -webkit-box;
+
+    -webkit-line-clamp: 4;
+
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+  }
+
+  .article-meta {
+    margin-top: 24px;
+
+    padding-top: 18px;
+
+    border-top: 1px solid #eee7e5;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    color: #918785;
+
+    font-size: 12px;
+  }
+
+  .read-more {
+    color: #211d1d;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+  }
+
+
+  /* =========================
+     EMPTY STATE
+  ========================== */
 
   .empty-card {
     border: 1px solid #e8dfdc;
+
     background: white;
+
     padding: 60px 30px;
+
     text-align: center;
+
     border-radius: 12px;
   }
 
   .icon {
     font-size: 38px;
+
     margin-bottom: 15px;
   }
 
-  h3 {
+  .empty-card h3 {
     margin: 0 0 10px;
+
     font-size: 25px;
   }
 
   .empty-card p {
     max-width: 560px;
+
     margin: 0 auto;
+
     color: #746b69;
+
     line-height: 1.7;
   }
 
+
+  /* =========================
+     CATEGORIES
+  ========================== */
+
+  .categories {
+    padding: 90px 0;
+
+    background: #f3eeeb;
+  }
+
+  .category-grid {
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+
+    gap: 16px;
+  }
+
+  .category-card {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    padding: 26px;
+
+    background: white;
+
+    border: 1px solid #e5dcd8;
+
+    border-radius: 10px;
+
+    color: #211d1d;
+
+    text-decoration: none;
+
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .category-card:hover {
+    transform: translateY(-3px);
+
+    box-shadow:
+      0 12px 30px
+      rgba(50, 30, 25, 0.07);
+  }
+
+  .category-card span {
+    font-size: 24px;
+
+    margin-bottom: 5px;
+  }
+
+  .category-card strong {
+    font-size: 18px;
+  }
+
+  .category-card small {
+    color: #746b69;
+
+    line-height: 1.5;
+  }
+
+
+  /* =========================
+     FOOTER
+  ========================== */
+
   footer {
     padding: 45px 0;
+
     border-top: 1px solid #e8dfdc;
+
     background: white;
+  }
+
+  .footer-inner {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 30px;
+  }
+
+  footer strong {
+    font-size: 18px;
   }
 
   footer p {
     color: #746b69;
-    margin-bottom: 0;
+
+    margin:
+      8px 0 0;
   }
 
+  .footer-links {
+    display: flex;
+
+    gap: 18px;
+  }
+
+  .footer-links a {
+    color: #746b69;
+
+    text-decoration: none;
+
+    font-size: 14px;
+  }
+
+  .footer-links a:hover {
+    color: #211d1d;
+  }
+
+
+  /* =========================
+     MOBILE
+  ========================== */
+
+  @media (max-width: 900px) {
+
+    .article-grid {
+      grid-template-columns:
+        repeat(
+          2,
+          minmax(0, 1fr)
+        );
+    }
+
+    .category-grid {
+      grid-template-columns:
+        repeat(
+          2,
+          minmax(0, 1fr)
+        );
+    }
+
+  }
+
+
   @media (max-width: 800px) {
+
     .nav {
       align-items: flex-start;
+
       flex-direction: column;
+
       padding: 18px 0;
+
       gap: 14px;
     }
 
     nav {
       width: 100%;
+
       padding-bottom: 4px;
     }
 
     .hero {
-      padding: 75px 0 85px;
+      padding:
+        75px 0
+        85px;
     }
 
     h1 {
       letter-spacing: -2.5px;
     }
+
+    .article-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .category-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .footer-inner {
+      flex-direction: column;
+
+      align-items: flex-start;
+    }
+
   }
+
+
+  @media (max-width: 480px) {
+
+    .container {
+      width:
+        calc(100% - 28px);
+    }
+
+    .hero {
+      padding:
+        60px 0
+        70px;
+    }
+
+    h1 {
+      font-size: 48px;
+
+      letter-spacing: -2px;
+    }
+
+    .intro {
+      font-size: 16px;
+    }
+
+    .latest,
+    .categories {
+      padding:
+        65px 0;
+    }
+
+  }
+
 </style>
