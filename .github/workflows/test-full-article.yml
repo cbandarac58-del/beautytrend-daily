@@ -25,54 +25,19 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: node scripts/build-article.mjs
 
-      - name: Search free beauty images
-        run: node scripts/find-beauty-images.mjs
-
-      - name: Show image results
+      - name: Verify generated article
         run: |
-          echo "================================="
-          echo "FREE BEAUTY IMAGES"
-          echo "================================="
+          if [ ! -f "generated/article.json" ]; then
+            echo "ERROR: generated/article.json was not created."
+            exit 1
+          fi
 
-          node --input-type=module <<'NODE'
-          import fs from "node:fs";
+          echo "Article file successfully created."
+          ls -lh generated/article.json
 
-          const file = "generated/beauty-images.json";
-
-          if (!fs.existsSync(file)) {
-            throw new Error(`Missing ${file}`);
-          }
-
-          const data = JSON.parse(
-            fs.readFileSync(file, "utf8")
-          );
-
-          console.log(`Topic: ${data.topic}`);
-          console.log(`Images found: ${data.images.length}`);
-
-          for (const [index, image] of data.images.entries()) {
-            console.log("");
-            console.log(`IMAGE ${index + 1}`);
-            console.log(`Title: ${image.title}`);
-            console.log(`URL: ${image.url}`);
-            console.log(`Author: ${image.artist}`);
-            console.log(`License: ${image.license}`);
-            console.log(`License URL: ${image.licenseUrl}`);
-            console.log(`File page: ${image.filePage}`);
-          }
-
-          if (data.images.length === 0) {
-            throw new Error("No usable beauty images found");
-          }
-
-          console.log("");
-          console.log("Image search successful.");
-          NODE
-
-      - name: Upload generated article and images
+      - name: Upload generated article
         uses: actions/upload-artifact@v4
         with:
           name: generated-beauty-article
-          path: |
-            generated/article.json
-            generated/beauty-images.json
+          path: generated/article.json
+          if-no-files-found: error
