@@ -22,11 +22,16 @@ fs.mkdirSync(outputDir, {
   recursive: true
 });
 
+// ============================================================
+// HELPERS
+// ============================================================
+
 const escapeYaml = (value) => {
   return String(value ?? "")
     .replace(/\\/g, "\\\\")
     .replace(/"/g, '\\"')
-    .replace(/\n/g, " ");
+    .replace(/\n/g, " ")
+    .trim();
 };
 
 const keywords = Array.isArray(article.keywords)
@@ -37,31 +42,76 @@ const faq = Array.isArray(article.faq)
   ? article.faq
   : [];
 
-const faqJson = JSON.stringify(faq)
-  .replace(/\\/g, "\\\\")
-  .replace(/"/g, '\\"');
-
 const youtube = Array.isArray(data.youtube)
   ? data.youtube
   : [];
 
-const youtubeJson = JSON.stringify(youtube)
-  .replace(/\\/g, "\\\\")
-  .replace(/"/g, '\\"');
+// ============================================================
+// DATES
+// ============================================================
 
-const frontmatter = `---
+const publishedAt = new Date().toISOString();
+
+// ============================================================
+// FRONTMATTER
+// ============================================================
+
+let frontmatter = `---
 title: "${escapeYaml(article.title)}"
 description: "${escapeYaml(article.description)}"
-excerpt: "${escapeYaml(article.excerpt)}"
-category: "${escapeYaml(article.category)}"
+excerpt: "${escapeYaml(article.excerpt || article.description)}"
+category: "${escapeYaml(article.category || "Beauty & Style")}"
 keywords:
-${keywords.map((keyword) => `  - "${escapeYaml(keyword)}"`).join("\n")}
-publishedAt: "${new Date().toISOString()}"
-faq: "${faqJson}"
-youtube: "${youtubeJson}"
----
+`;
+
+for (const keyword of keywords) {
+  frontmatter += `  - "${escapeYaml(keyword)}"\n`;
+}
+
+frontmatter += `publishedAt: "${publishedAt}"
+`;
+
+// ============================================================
+// FAQ
+// ============================================================
+
+frontmatter += `faq:
+`;
+
+if (faq.length > 0) {
+  for (const item of faq) {
+    frontmatter += `  - question: "${escapeYaml(item.question)}"\n`;
+    frontmatter += `    answer: "${escapeYaml(item.answer)}"\n`;
+  }
+} else {
+  frontmatter += `  []\n`;
+}
+
+// ============================================================
+// YOUTUBE
+// ============================================================
+
+frontmatter += `youtube:
+`;
+
+if (youtube.length > 0) {
+  for (const video of youtube) {
+    if (!video?.videoId) continue;
+
+    frontmatter += `  - title: "${escapeYaml(video.title)}"\n`;
+    frontmatter += `    videoId: "${escapeYaml(video.videoId)}"\n`;
+  }
+} else {
+  frontmatter += `  []\n`;
+}
+
+frontmatter += `---
 
 `;
+
+// ============================================================
+// FINAL ARTICLE
+// ============================================================
 
 const output = frontmatter + article.content;
 
@@ -76,6 +126,10 @@ fs.writeFileSync(
   "utf8"
 );
 
+// ============================================================
+// OUTPUT
+// ============================================================
+
 console.log("=================================");
 console.log("ASTRO ARTICLE CREATED");
 console.log("=================================");
@@ -84,4 +138,5 @@ console.log(`Category: ${article.category}`);
 console.log(`Slug: ${article.slug}`);
 console.log(`File: ${outputPath}`);
 console.log(`YouTube videos: ${youtube.length}`);
+console.log(`FAQ items: ${faq.length}`);
 console.log("=================================");
