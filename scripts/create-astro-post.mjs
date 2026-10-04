@@ -22,15 +22,15 @@ fs.mkdirSync(outputDir, {
   recursive: true
 });
 
-// ============================================================
-// HELPERS
-// ============================================================
+// ------------------------------------------------------------
+// Helpers
+// ------------------------------------------------------------
 
 const escapeYaml = (value) => {
   return String(value ?? "")
     .replace(/\\/g, "\\\\")
     .replace(/"/g, '\\"')
-    .replace(/\n/g, " ")
+    .replace(/\r?\n/g, " ")
     .trim();
 };
 
@@ -44,76 +44,90 @@ const faq = Array.isArray(article.faq)
 
 const youtube = Array.isArray(data.youtube)
   ? data.youtube
+      .filter((video) => video?.videoId)
+      .map((video) => ({
+        title: String(video.title || "Related Beauty Video"),
+        videoId: String(video.videoId)
+      }))
   : [];
 
-// ============================================================
-// DATES
-// ============================================================
+// ------------------------------------------------------------
+// YAML arrays
+// ------------------------------------------------------------
 
-const publishedAt = new Date().toISOString();
+const keywordYaml =
+  keywords.length > 0
+    ? keywords
+        .map(
+          (keyword) =>
+            `  - "${escapeYaml(keyword)}"`
+        )
+        .join("\n")
+    : "  []";
 
-// ============================================================
-// FRONTMATTER
-// ============================================================
+const faqYaml =
+  faq.length > 0
+    ? faq
+        .map((item) => {
+          return [
+            "  - question: \"" +
+              escapeYaml(item.question) +
+              "\"",
+            "    answer: \"" +
+              escapeYaml(item.answer) +
+              "\""
+          ].join("\n");
+        })
+        .join("\n")
+    : "  []";
 
-let frontmatter = `---
+const youtubeYaml =
+  youtube.length > 0
+    ? youtube
+        .map((video) => {
+          return [
+            "  - title: \"" +
+              escapeYaml(video.title) +
+              "\"",
+            "    videoId: \"" +
+              escapeYaml(video.videoId) +
+              "\""
+          ].join("\n");
+        })
+        .join("\n")
+    : "  []";
+
+// ------------------------------------------------------------
+// Frontmatter
+// ------------------------------------------------------------
+
+const publishedAt =
+  new Date().toISOString();
+
+const frontmatter = `---
 title: "${escapeYaml(article.title)}"
 description: "${escapeYaml(article.description)}"
 excerpt: "${escapeYaml(article.excerpt || article.description)}"
 category: "${escapeYaml(article.category || "Beauty & Style")}"
 keywords:
-`;
-
-for (const keyword of keywords) {
-  frontmatter += `  - "${escapeYaml(keyword)}"\n`;
-}
-
-frontmatter += `publishedAt: "${publishedAt}"
-`;
-
-// ============================================================
-// FAQ
-// ============================================================
-
-frontmatter += `faq:
-`;
-
-if (faq.length > 0) {
-  for (const item of faq) {
-    frontmatter += `  - question: "${escapeYaml(item.question)}"\n`;
-    frontmatter += `    answer: "${escapeYaml(item.answer)}"\n`;
-  }
-} else {
-  frontmatter += `  []\n`;
-}
-
-// ============================================================
-// YOUTUBE
-// ============================================================
-
-frontmatter += `youtube:
-`;
-
-if (youtube.length > 0) {
-  for (const video of youtube) {
-    if (!video?.videoId) continue;
-
-    frontmatter += `  - title: "${escapeYaml(video.title)}"\n`;
-    frontmatter += `    videoId: "${escapeYaml(video.videoId)}"\n`;
-  }
-} else {
-  frontmatter += `  []\n`;
-}
-
-frontmatter += `---
+${keywordYaml}
+publishedAt: "${publishedAt}"
+faq:
+${faqYaml}
+youtube:
+${youtubeYaml}
+---
 
 `;
 
-// ============================================================
-// FINAL ARTICLE
-// ============================================================
+// ------------------------------------------------------------
+// Final Markdown
+// ------------------------------------------------------------
 
-const output = frontmatter + article.content;
+const output =
+  frontmatter +
+  article.content.trim() +
+  "\n";
 
 const outputPath = path.join(
   outputDir,
@@ -126,10 +140,6 @@ fs.writeFileSync(
   "utf8"
 );
 
-// ============================================================
-// OUTPUT
-// ============================================================
-
 console.log("=================================");
 console.log("ASTRO ARTICLE CREATED");
 console.log("=================================");
@@ -138,5 +148,4 @@ console.log(`Category: ${article.category}`);
 console.log(`Slug: ${article.slug}`);
 console.log(`File: ${outputPath}`);
 console.log(`YouTube videos: ${youtube.length}`);
-console.log(`FAQ items: ${faq.length}`);
 console.log("=================================");
