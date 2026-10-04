@@ -1,0 +1,65 @@
+
+name: Test Beauty Image Search
+
+on:
+  workflow_dispatch:
+
+jobs:
+  search-images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate test article data
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          npm install @google/genai
+          node scripts/build-article.mjs
+
+      - name: Search free beauty images
+        run: node scripts/find-beauty-images.mjs
+
+      - name: Show image results
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+
+          const data = JSON.parse(
+            fs.readFileSync(
+              'generated/beauty-images.json',
+              'utf8'
+            )
+          );
+
+          console.log('Topic:', data.topic);
+          console.log('Images found:', data.images.length);
+
+          for (const [index, image] of data.images.entries()) {
+            console.log(`\nImage ${index + 1}`);
+            console.log('Title:', image.title);
+            console.log('URL:', image.url);
+            console.log('License:', image.license);
+            console.log('Author:', image.artist);
+            console.log('License URL:', image.licenseUrl);
+            console.log('File page:', image.filePage);
+          }
+
+          if (data.images.length === 0) {
+            throw new Error('No usable images found');
+          }
+          NODE
+
+      - name: Upload image search results
+        uses: actions/upload-artifact@v4
+        with:
+          name: beauty-image-search-results
+          path: generated/beauty-images.json
