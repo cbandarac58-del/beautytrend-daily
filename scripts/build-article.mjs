@@ -1,4 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
 import fs from "node:fs";
 
 const geminiKey = process.env.GEMINI_API_KEY;
@@ -12,13 +11,11 @@ if (!youtubeKey) {
   throw new Error("YOUTUBE_API_KEY is not configured");
 }
 
-const ai = new GoogleGenAI({
-  apiKey: geminiKey
-});
+// --------------------------------------------------
+// CONFIG
+// --------------------------------------------------
 
-// --------------------------------------------------
-// 1. BEAUTY TOPIC
-// --------------------------------------------------
+const GEMINI_MODEL = "gemini-2.5-flash";
 
 const topics = [
   "latest women's haircut trends 2026",
@@ -42,7 +39,131 @@ console.log("=================================");
 console.log(`Topic: ${topic}`);
 
 // --------------------------------------------------
-// 2. RESEARCH
+// HELPERS
+// --------------------------------------------------
+
+function cleanMarkdownCodeFence(text) {
+  return String(text ?? "")
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+}
+
+function extractJsonObject(text) {
+  const cleaned = cleanMarkdownCodeFence(text);
+
+  // First attempt: direct JSON
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    // Continue to extraction
+  }
+
+  // Find first { and last }
+  const firstBrace = cleaned.indexOf("{");
+  const lastBrace = cleaned.lastIndexOf("}");
+
+  if (
+    firstBrace !== -1 &&
+    lastBrace !== -1 &&
+    lastBrace > firstBrace
+  ) {
+    const candidate = cleaned.slice(
+      firstBrace,
+      lastBrace + 1
+    );
+
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+}
+
+async function callGemini({
+  prompt,
+  useSearch = false,
+  jsonMode = false
+}) {
+  const body = {
+    contents: [
+      {
+        parts: [
+          {
+            text: prompt
+          }
+        ]
+      }
+    ]
+  };
+
+  if (jsonMode) {
+    body.generationConfig = {
+      responseMimeType: "application/json"
+    };
+  }
+
+  if (useSearch) {
+    body.tools = [
+      {
+        google_search: {}
+      }
+    ];
+  }
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": geminiKey
+      },
+      body: JSON.stringify(body)
+    }
+  );
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(
+      `Gemini API error: ${response.status}\n${text}`
+    );
+  }
+
+  let data;
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(
+      `Gemini returned invalid API JSON:\n${text}`
+    );
+  }
+
+  const output =
+    data?.candidates?.[0]?.content?.parts
+      ?.map((part) => part.text || "")
+      .join("");
+
+  if (!output) {
+    const finishReason =
+      data?.candidates?.[0]?.finishReason || "UNKNOWN";
+
+    throw new Error(
+      `No Gemini content returned. Finish reason: ${finishReason}`
+    );
+  }
+
+  return output;
+}
+
+// --------------------------------------------------
+// 1. RESEARCH
 // --------------------------------------------------
 
 const researchPrompt = `
@@ -50,20 +171,22 @@ Research the following beauty topic using current web information:
 
 "${topic}"
 
-Focus on information relevant to an international beauty magazine.
+You are researching for an international beauty magazine.
 
-Find:
-- current trends
-- style details
+Focus on:
+
+- current 2026 trends
+- important style details
 - practical information
-- who the style may suit
+- who the styles may suit
 - maintenance ideas
+- styling ideas
 - recent developments
 - useful information from reputable sources
 
-Do not copy articles.
+Do not copy source articles.
 
-Return ONLY valid JSON:
+Return ONLY valid JSON matching this exact structure:
 
 {
   "topic": "",
@@ -80,104 +203,91 @@ Return ONLY valid JSON:
 
 console.log("\nResearching web information...");
 
-const researchResponse = await fetch(
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": geminiKey
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            {
-              text: researchPrompt
-            }
-          ]
-        }
-      ],
-      tools: [
-        {
-          google_search: {}
-        }
-      ]
-    })
-  }
-);
-
-if (!researchResponse.ok) {
-  const error = await researchResponse.text();
-
-  throw new Error(
-    `Research API error: ${researchResponse.status}\n${error}`
-  );
-}
-
-const researchJson = await researchResponse.json();
-
-const researchText =
-  researchJson?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-if (!researchText) {
-  throw new Error("No research result returned");
-}
-
-const cleanResearch = researchText
-  .replace(/^```json\s*/i, "")
-  .replace(/\s*```$/i, "")
-  .trim();
-
-let research;
+let researchText;
 
 try {
-  research = JSON.parse(cleanResearch);
-} catch {
-  console.error(cleanResearch);
-  throw new Error("Research JSON could not be parsed");
+  researchText = await callGemini({
+    prompt: researchPrompt,
+    useSearch: true,
+    jsonMode: true
+  });
+} catch (error) {
+  console.error("\nResearch failed.");
+  throw error;
+}
+
+const research = extractJsonObject(researchText);
+
+if (!research) {
+  console.error("\nRAW RESEARCH RESPONSE:");
+  console.error(researchText);
+
+  throw new Error(
+    "Research JSON could not be parsed"
+  );
 }
 
 console.log("Research completed.");
 
 // --------------------------------------------------
-// 3. ARTICLE
+// 2. ARTICLE GENERATION
 // --------------------------------------------------
 
 const articlePrompt = `
 You are the senior editor of a modern international beauty magazine.
 
-Create an original article using the research below.
+Create a completely original article based on the research below.
 
-ARTICLE:
+TOPIC:
+${topic}
+
+ARTICLE REQUIREMENTS:
+
 - Approximately 1,200 words
 - Natural human editorial writing
 - Original wording
 - Useful and informative
-- Mobile friendly
+- Mobile-friendly structure
+- Clear headings
 - No keyword stuffing
 - No invented statistics
 - No invented quotes
 - Do not copy source wording
 - Do not mention AI
+- Do not mention that the article was generated
+- Avoid repetitive wording
 
-SEO:
-- attractive SEO title
+SEO REQUIREMENTS:
+
+- Attractive SEO title
 - URL-friendly slug
-- 150-160 character meta description
-- 5-10 keywords
-- short excerpt
+- Meta description between approximately 150 and 160 characters
+- 5 to 10 relevant keywords
+- Short excerpt
+- Appropriate beauty category
 
 STRUCTURE:
+
 - Introduction
 - Main trend discussion
 - Practical ideas
-- Who it may suit
+- Who each style may suit
 - Styling or maintenance tips
 - Final thoughts
-- 4 FAQs
+- 4 useful FAQs
 
-Return ONLY valid JSON:
+The "content" field MUST contain Markdown.
+
+IMPORTANT JSON RULES:
+
+- Return ONLY valid JSON.
+- Do not use Markdown code fences.
+- Do not add explanations before or after the JSON.
+- Properly escape all quotation marks inside strings.
+- Properly escape newline characters.
+- Make sure the final response can be parsed directly with JSON.parse().
+
+Return exactly this structure:
 
 {
   "title": "",
@@ -195,149 +305,284 @@ Return ONLY valid JSON:
   ]
 }
 
-The content field must contain Markdown.
-
 RESEARCH:
 ${JSON.stringify(research)}
 `;
 
 console.log("Generating article...");
 
-const articleResponse = await fetch(
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": geminiKey
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            {
-              text: articlePrompt
-            }
-          ]
-        }
-      ]
-    })
+let articleText;
+
+try {
+  articleText = await callGemini({
+    prompt: articlePrompt,
+    jsonMode: true
+  });
+} catch (error) {
+  console.error("\nArticle generation failed.");
+  throw error;
+}
+
+let article = extractJsonObject(articleText);
+
+if (!article) {
+  console.log(
+    "First article JSON parsing failed."
+  );
+
+  console.log(
+    "Attempting one automatic JSON repair..."
+  );
+
+  const repairPrompt = `
+Repair the following malformed JSON.
+
+Return ONLY valid JSON.
+
+Rules:
+- Preserve the article content.
+- Do not shorten the article.
+- Do not rewrite the article unnecessarily.
+- Correct invalid quotation marks.
+- Correct invalid newline characters.
+- Correct invalid escape sequences.
+- Ensure all strings are properly closed.
+- Do not use Markdown code fences.
+- Do not add commentary.
+
+MALFORMED JSON:
+
+${articleText}
+`;
+
+  let repairedText;
+
+  try {
+    repairedText = await callGemini({
+      prompt: repairPrompt,
+      jsonMode: true
+    });
+  } catch (error) {
+    console.error(
+      "\nJSON repair request failed."
+    );
+
+    throw error;
   }
-);
 
-if (!articleResponse.ok) {
-  const error = await articleResponse.text();
+  article = extractJsonObject(repairedText);
 
-  throw new Error(
-    `Article API error: ${articleResponse.status}\n${error}`
+  if (!article) {
+    console.error("\nORIGINAL ARTICLE RESPONSE:");
+    console.error(articleText);
+
+    console.error("\nREPAIRED ARTICLE RESPONSE:");
+    console.error(repairedText);
+
+    throw new Error(
+      "Article JSON could not be parsed even after repair"
+    );
+  }
+
+  console.log(
+    "JSON repair successful."
   );
 }
 
-const articleJson = await articleResponse.json();
-
-const articleText =
-  articleJson?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-if (!articleText) {
-  throw new Error("No article returned");
+if (
+  !article.title ||
+  !article.slug ||
+  !article.content
+) {
+  throw new Error(
+    "Article JSON is missing required fields"
+  );
 }
 
-const cleanArticle = articleText
-  .replace(/^```json\s*/i, "")
-  .replace(/\s*```$/i, "")
-  .trim();
-
-let article;
-
-try {
-  article = JSON.parse(cleanArticle);
-} catch {
-  console.error(cleanArticle);
-  throw new Error("Article JSON could not be parsed");
-}
-
-console.log(`Article title: ${article.title}`);
+console.log(
+  `Article title: ${article.title}`
+);
 
 // --------------------------------------------------
-// 4. YOUTUBE SEARCH
+// 3. YOUTUBE SEARCH
 // --------------------------------------------------
 
 const searchTerms = [
   article.title,
-  ...(article.keywords || []).slice(0, 3)
+  ...(Array.isArray(article.keywords)
+    ? article.keywords.slice(0, 3)
+    : [])
 ];
 
-const youtubeQuery = searchTerms.join(" ");
+const youtubeQuery =
+  searchTerms.join(" ");
 
-console.log(`Searching YouTube: ${youtubeQuery}`);
+console.log(
+  `Searching YouTube: ${youtubeQuery}`
+);
 
 const youtubeUrl = new URL(
   "https://www.googleapis.com/youtube/v3/search"
 );
 
-youtubeUrl.searchParams.set("part", "snippet");
-youtubeUrl.searchParams.set("q", youtubeQuery);
-youtubeUrl.searchParams.set("type", "video");
-youtubeUrl.searchParams.set("maxResults", "5");
-youtubeUrl.searchParams.set("order", "relevance");
-youtubeUrl.searchParams.set("safeSearch", "strict");
-youtubeUrl.searchParams.set("key", youtubeKey);
+youtubeUrl.searchParams.set(
+  "part",
+  "snippet"
+);
 
-const youtubeResponse = await fetch(youtubeUrl);
+youtubeUrl.searchParams.set(
+  "q",
+  youtubeQuery
+);
+
+youtubeUrl.searchParams.set(
+  "type",
+  "video"
+);
+
+youtubeUrl.searchParams.set(
+  "maxResults",
+  "5"
+);
+
+youtubeUrl.searchParams.set(
+  "order",
+  "relevance"
+);
+
+youtubeUrl.searchParams.set(
+  "safeSearch",
+  "strict"
+);
+
+youtubeUrl.searchParams.set(
+  "key",
+  youtubeKey
+);
+
+const youtubeResponse = await fetch(
+  youtubeUrl
+);
 
 if (!youtubeResponse.ok) {
-  const error = await youtubeResponse.text();
+  const error =
+    await youtubeResponse.text();
 
   throw new Error(
     `YouTube API error: ${youtubeResponse.status}\n${error}`
   );
 }
 
-const youtubeData = await youtubeResponse.json();
+const youtubeData =
+  await youtubeResponse.json();
 
-const videos = (youtubeData.items || []).map((item) => ({
-  title: item.snippet.title,
-  channel: item.snippet.channelTitle,
-  videoId: item.id.videoId,
-  url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-  thumbnail:
-    item.snippet.thumbnails?.high?.url ||
-    item.snippet.thumbnails?.medium?.url ||
-    item.snippet.thumbnails?.default?.url
-}));
+const videos =
+  (youtubeData.items || [])
+    .filter(
+      (item) =>
+        item?.id?.videoId
+    )
+    .map((item) => ({
+      title:
+        item.snippet.title,
 
-console.log(`YouTube videos found: ${videos.length}`);
+      channel:
+        item.snippet.channelTitle,
+
+      videoId:
+        item.id.videoId,
+
+      url:
+        `https://www.youtube.com/watch?v=${item.id.videoId}`,
+
+      thumbnail:
+        item.snippet.thumbnails?.high?.url ||
+        item.snippet.thumbnails?.medium?.url ||
+        item.snippet.thumbnails?.default?.url
+    }));
+
+console.log(
+  `YouTube videos found: ${videos.length}`
+);
 
 // --------------------------------------------------
-// 5. SAVE FINAL DATA
+// 4. FINAL DATA
 // --------------------------------------------------
 
 const output = {
-  generatedAt: new Date().toISOString(),
+  generatedAt:
+    new Date().toISOString(),
+
   topic,
+
   research,
+
   article,
+
   youtube: videos
 };
 
-fs.mkdirSync("generated", {
-  recursive: true
-});
+fs.mkdirSync(
+  "generated",
+  {
+    recursive: true
+  }
+);
 
 fs.writeFileSync(
   "generated/article.json",
-  JSON.stringify(output, null, 2)
+  JSON.stringify(
+    output,
+    null,
+    2
+  ),
+  "utf8"
 );
 
-console.log("\n=================================");
-console.log("BUILD COMPLETE");
-console.log("=================================");
-console.log(`Title: ${article.title}`);
-console.log(`Slug: ${article.slug}`);
-console.log(`Category: ${article.category}`);
+// --------------------------------------------------
+// 5. FINAL LOG
+// --------------------------------------------------
+
 console.log(
-  `Keywords: ${(article.keywords || []).join(", ")}`
+  "\n================================="
 );
-console.log(`YouTube videos: ${videos.length}`);
-console.log("Saved: generated/article.json");
-console.log("=================================");
+
+console.log(
+  "BUILD COMPLETE"
+);
+
+console.log(
+  "================================="
+);
+
+console.log(
+  `Title: ${article.title}`
+);
+
+console.log(
+  `Slug: ${article.slug}`
+);
+
+console.log(
+  `Category: ${article.category}`
+);
+
+console.log(
+  `Keywords: ${
+    Array.isArray(article.keywords)
+      ? article.keywords.join(", ")
+      : ""
+  }`
+);
+
+console.log(
+  `YouTube videos: ${videos.length}`
+);
+
+console.log(
+  "Saved: generated/article.json"
+);
+
+console.log(
+  "================================="
+);
