@@ -1,0 +1,54 @@
+name: Daily 3 Beauty Posts Automation
+
+on:
+  schedule:
+    # 8:30 AM, 2:30 PM, 8:30 PM (Sri Lanka Time)
+    - cron: '0 3,9,15 * * *'
+  workflow_dispatch:
+    inputs:
+      post_count:
+        description: 'Number of articles to generate'
+        required: false
+        default: '1'
+
+permissions:
+  contents: write
+
+jobs:
+  publish-beauty-posts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Generate & Publish Article(s)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          COUNT="${{ github.event.inputs.post_count || 1 }}"
+          node scripts/publish-daily-post.mjs "$COUNT"
+
+      - name: Commit and Push new articles
+        run: |
+          git config --global user.name "BeautyTrend Bot"
+          git config --global user.email "bot@beautytrend-daily.com"
+          git add src/content/articles/
+          if git diff --staged --quiet; then
+            echo "No new articles found to commit."
+          else
+            git commit -m "Auto-publish new beauty trend article(s) [skip ci]"
+            git pull --rebase origin main
+            git push origin main
+          fi
