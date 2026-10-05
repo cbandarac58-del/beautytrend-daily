@@ -1,29 +1,60 @@
-name: Test Full Astro Article
+name: Publish Beauty Article
 
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
 
     steps:
+
+      # ============================================================
+      # CHECKOUT
+      # ============================================================
+
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # ============================================================
+      # NODE
+      # ============================================================
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
+      # ============================================================
+      # INSTALL PROJECT DEPENDENCIES
+      # ============================================================
+
+      - name: Install dependencies
+        run: npm install
+
+      # ============================================================
+      # INSTALL GEMINI SDK
+      # ============================================================
+
       - name: Install Gemini SDK
         run: npm install @google/genai
+
+      # ============================================================
+      # GENERATE ARTICLE + YOUTUBE
+      # ============================================================
 
       - name: Generate article and YouTube data
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: node scripts/build-article.mjs
+
+      # ============================================================
+      # VERIFY JSON
+      # ============================================================
 
       - name: Verify generated article JSON
         run: |
@@ -32,22 +63,39 @@ jobs:
             exit 1
           fi
 
-          echo "generated/article.json exists."
-          echo "File size:"
+          echo "================================="
+          echo "ARTICLE JSON CREATED"
+          echo "================================="
+
           wc -c generated/article.json
+
+      # ============================================================
+      # CREATE ASTRO MARKDOWN ARTICLE
+      # ============================================================
 
       - name: Create Astro article
         run: node scripts/create-astro-post.mjs
 
+      # ============================================================
+      # VERIFY ARTICLE FILE
+      # ============================================================
+
       - name: Verify Astro article
         run: |
           echo "================================="
-          echo "GENERATED ASTRO FILES"
+          echo "GENERATED ASTRO ARTICLES"
           echo "================================="
 
-          find src/content/articles -maxdepth 1 -type f -print
+          find src/content/articles \
+            -maxdepth 1 \
+            -type f \
+            -print
 
-          FILE=$(find src/content/articles -maxdepth 1 -type f | head -n 1)
+          FILE=$(find src/content/articles \
+            -maxdepth 1 \
+            -type f \
+            -name "*.md" \
+            | head -n 1)
 
           if [ -z "$FILE" ]; then
             echo "ERROR: No Astro article was created."
@@ -58,6 +106,7 @@ jobs:
           echo "================================="
           echo "ARTICLE FILE"
           echo "================================="
+
           echo "$FILE"
 
           echo ""
@@ -65,7 +114,18 @@ jobs:
           echo "ARTICLE PREVIEW"
           echo "================================="
 
-          sed -n '1,50p' "$FILE"
+          sed -n '1,80p' "$FILE"
+
+      # ============================================================
+      # BUILD ASTRO
+      # ============================================================
+
+      - name: Build Astro site
+        run: npm run build
+
+      # ============================================================
+      # UPLOAD ARTICLE JSON
+      # ============================================================
 
       - name: Upload generated article JSON
         uses: actions/upload-artifact@v4
@@ -73,8 +133,51 @@ jobs:
           name: generated-article-json
           path: generated/article.json
 
+      # ============================================================
+      # UPLOAD ASTRO ARTICLE
+      # ============================================================
+
       - name: Upload Astro article
         uses: actions/upload-artifact@v4
         with:
-          name: astro-article-test
+          name: astro-article
           path: src/content/articles/*.md
+
+      # ============================================================
+      # COMMIT ARTICLE TO GITHUB
+      # ============================================================
+
+      - name: Commit generated article
+        run: |
+          echo "================================="
+          echo "COMMITTING ARTICLE"
+          echo "================================="
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add src/content/articles/*.md
+
+          if git diff --cached --quiet; then
+            echo "No article changes detected."
+            exit 0
+          fi
+
+          git commit -m "Publish new beauty article"
+
+      # ============================================================
+      # PUSH TO GITHUB
+      # ============================================================
+
+      - name: Push article to GitHub
+        run: |
+          echo "================================="
+          echo "PUSHING ARTICLE TO GITHUB"
+          echo "================================="
+
+          git push
+
+          echo ""
+          echo "================================="
+          echo "ARTICLE PUSHED SUCCESSFULLY"
+          echo "================================="
