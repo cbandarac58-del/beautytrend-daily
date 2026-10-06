@@ -21,32 +21,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # --------------------------------------------------
-      # 1. Checkout
-      # --------------------------------------------------
+
+      # ==========================================
+      # 1. CHECKOUT REPOSITORY
+      # ==========================================
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # --------------------------------------------------
-      # 2. Node.js
-      # --------------------------------------------------
+      # ==========================================
+      # 2. SETUP NODE.JS
+      # ==========================================
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
-      # --------------------------------------------------
-      # 3. Install dependencies
-      # --------------------------------------------------
+      # ==========================================
+      # 3. INSTALL DEPENDENCIES
+      # ==========================================
       - name: Install dependencies
-        run: npm ci || npm install
+        run: |
+          npm install
 
-      # --------------------------------------------------
-      # 4. Generate article(s)
-      # --------------------------------------------------
+      # ==========================================
+      # 4. GENERATE ARTICLE(S)
+      # ==========================================
       - name: Generate Beauty Article(s)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -55,8 +56,10 @@ jobs:
           COUNT="${{ github.event.inputs.post_count || 1 }}"
 
           echo "========================================"
-          echo "GENERATING BEAUTY ARTICLE(S)"
-          echo "COUNT: $COUNT"
+          echo "BEAUTYTREND DAILY"
+          echo "ARTICLE GENERATION"
+          echo "========================================"
+          echo "Articles requested: $COUNT"
           echo "========================================"
 
           if ! [[ "$COUNT" =~ ^[0-9]+$ ]]; then
@@ -70,6 +73,7 @@ jobs:
           fi
 
           for ((i=1; i<=COUNT; i++)); do
+
             echo ""
             echo "----------------------------------------"
             echo "Generating article $i of $COUNT"
@@ -77,27 +81,41 @@ jobs:
 
             node scripts/publish-daily-post.mjs
 
+            echo ""
             echo "Article $i generated successfully."
+
           done
 
-      # --------------------------------------------------
-      # 5. Show generated articles
-      # --------------------------------------------------
+      # ==========================================
+      # 5. VERIFY GENERATED ARTICLES
+      # ==========================================
       - name: Verify generated articles
         run: |
           echo "========================================"
-          echo "GENERATED ARTICLE FILES"
+          echo "GENERATED ASTRO ARTICLES"
           echo "========================================"
 
-          find src/content/articles -maxdepth 1 -type f -name "*.md" -print
+          if [ ! -d "src/content/articles" ]; then
+            echo "ERROR: src/content/articles directory does not exist."
+            exit 1
+          fi
+
+          FILE_COUNT=$(find src/content/articles -maxdepth 1 -type f -name "*.md" | wc -l)
+
+          echo "Total article files found: $FILE_COUNT"
+
+          if [ "$FILE_COUNT" -eq 0 ]; then
+            echo "ERROR: No Markdown articles found."
+            exit 1
+          fi
 
           echo ""
-          echo "Article count:"
-          find src/content/articles -maxdepth 1 -type f -name "*.md" | wc -l
+          echo "Article files:"
+          find src/content/articles -maxdepth 1 -type f -name "*.md" -print
 
-      # --------------------------------------------------
-      # 6. Build Astro
-      # --------------------------------------------------
+      # ==========================================
+      # 6. BUILD ASTRO SITE
+      # ==========================================
       - name: Build Astro site
         run: |
           echo "========================================"
@@ -106,9 +124,25 @@ jobs:
 
           npm run build
 
-      # --------------------------------------------------
-      # 7. Commit generated articles
-      # --------------------------------------------------
+          echo ""
+          echo "========================================"
+          echo "ASTRO BUILD SUCCESSFUL"
+          echo "========================================"
+
+      # ==========================================
+      # 7. SHOW GIT CHANGES
+      # ==========================================
+      - name: Check Git changes
+        run: |
+          echo "========================================"
+          echo "GIT CHANGES"
+          echo "========================================"
+
+          git status --short
+
+      # ==========================================
+      # 8. COMMIT NEW ARTICLES
+      # ==========================================
       - name: Commit new articles
         run: |
           echo "========================================"
@@ -125,13 +159,15 @@ jobs:
             exit 0
           fi
 
-          git status --short
+          echo ""
+          echo "Files ready to commit:"
+          git diff --cached --name-only
 
           git commit -m "Auto-publish beauty trend article"
 
-      # --------------------------------------------------
-      # 8. Push to GitHub
-      # --------------------------------------------------
+      # ==========================================
+      # 9. PUSH TO GITHUB
+      # ==========================================
       - name: Push articles to GitHub
         run: |
           echo "========================================"
@@ -139,9 +175,11 @@ jobs:
           echo "========================================"
 
           git pull --rebase origin main
+
           git push origin main
 
           echo ""
           echo "========================================"
-          echo "BEAUTY ARTICLE PUBLISHED SUCCESSFULLY"
+          echo "ARTICLE PUBLISHED TO GITHUB"
           echo "========================================"
+          echo "Cloudflare Pages should now deploy."
