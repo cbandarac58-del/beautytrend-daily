@@ -9,11 +9,15 @@ if (!geminiKey) {
 }
 
 const ARTICLES_DIR = "src/content/articles";
-fs.mkdirSync(ARTICLES_DIR, { recursive: true });
+
+fs.mkdirSync(ARTICLES_DIR, {
+  recursive: true
+});
 
 // ============================================================
-// 1. TOPIC POOL (2026 Trends)
+// 1. TOPIC POOL
 // ============================================================
+
 const TOPICS = [
   "Korean Butterfly Haircut Trends 2026",
   "French Bob with Curtain Bangs 2026",
@@ -31,163 +35,956 @@ const TOPICS = [
   "Natural Latte Makeup & Clean Girl Aesthetic 2026"
 ];
 
+function slugify(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function selectUniqueTopic() {
-  const existingFiles = fs.readdirSync(ARTICLES_DIR).map((f) => f.toLowerCase());
+  const existingFiles = fs
+    .readdirSync(ARTICLES_DIR)
+    .map((file) => file.toLowerCase());
+
   const available = TOPICS.filter((topic) => {
-    const slug = topic.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-    return !existingFiles.some((f) => f.includes(slug));
+    const slug = slugify(topic);
+
+    return !existingFiles.some((file) =>
+      file.includes(slug)
+    );
   });
-  const pool = available.length > 0 ? available : TOPICS;
-  return pool[Math.floor(Math.random() * pool.length)];
+
+  const pool =
+    available.length > 0
+      ? available
+      : TOPICS;
+
+  return pool[
+    Math.floor(Math.random() * pool.length)
+  ];
 }
 
 // ============================================================
-// 2. GEMINI API WITH RETRY
+// 2. GEMINI CONFIG
 // ============================================================
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
 
-async function callGemini(prompt, model = "gemini-2.5-flash") {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      tools: [{ google_search: {} }]
-    })
-  });
+const GEMINI_MODELS = [
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite"
+];
 
-  const data = await response.json();
-  if (!response.ok) throw new Error(data?.error?.message || "Gemini API Error");
-  return data?.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("").trim();
+const MAX_ATTEMPTS = 3;
+const RETRY_DELAY = 4000;
+
+function sleep(ms) {
+  return new Promise((resolve) =>
+    setTimeout(resolve, ms)
+  );
 }
+
+// ============================================================
+// 3. GEMINI API
+// ============================================================
+
+async function callGemini(
+  prompt,
+  model = "gemini-2.5-flash"
+) {
+  const url =
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
+  const controller =
+    new AbortController();
+
+  const timeout = setTimeout(
+    () => controller.abort(),
+    120000
+  );
+
+  try {
+    const response = await fetch(
+      url,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+          "x-goog-api-key":
+            geminiKey
+        },
+
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ],
+
+          tools: [
+            {
+              google_search: {}
+            }
+          ]
+        }),
+
+        signal: controller.signal
+      }
+    );
+
+    const text =
+      await response.text();
+
+    if (!response.ok) {
+      let message = text;
+
+      try {
+        const data =
+          JSON.parse(text);
+
+        message =
+          data?.error?.message ||
+          text;
+      } catch {}
+
+      const error =
+        new Error(
+          `Gemini API ${response.status}: ${message}`
+        );
+
+      error.status =
+        response.status;
+
+      throw error;
+    }
+
+    let data;
+
+    try {
+      data =
+        JSON.parse(text);
+    } catch {
+      throw new Error(
+        "Gemini returned invalid HTTP JSON"
+      );
+    }
+
+    const output =
+      data?.candidates?.[0]
+        ?.content?.parts
+        ?.map(
+          (part) =>
+            part.text || ""
+        )
+        .join("")
+        .trim();
+
+    if (!output) {
+      throw new Error(
+        "Gemini returned an empty response"
+      );
+    }
+
+    return output;
+
+  } catch (error) {
+
+    if (
+      error?.name ===
+      "AbortError"
+    ) {
+      const timeoutError =
+        new Error(
+          "Gemini request timed out after 120 seconds"
+        );
+
+      timeoutError.status =
+        408;
+
+      throw timeoutError;
+    }
+
+    throw error;
+
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+// ============================================================
+// 4. GEMINI SAFE RETRY
+// ============================================================
 
 async function callGeminiSafe(prompt) {
-  for (const model of GEMINI_MODELS) {
-    try {
-      return await callGemini(prompt, model);
-    } catch (e) {
-      console.log(`Failed with ${model}, retrying... (${e.message})`);
+  let lastError = null;
+
+  for (
+    const model of GEMINI_MODELS
+  ) {
+
+    for (
+      let attempt = 1;
+      attempt <= MAX_ATTEMPTS;
+      attempt++
+    ) {
+
+      try {
+
+        console.log(
+          `Gemini ${model} - attempt ${attempt}/${MAX_ATTEMPTS}`
+        );
+
+        const result =
+          await callGemini(
+            prompt,
+            model
+          );
+
+        console.log(
+          `Gemini response received from ${model}`
+        );
+
+        return result;
+
+      } catch (error) {
+
+        lastError =
+          error;
+
+        console.log(
+          `Gemini error: ${error.message}`
+        );
+
+        const retryable =
+          error?.status === 408 ||
+          error?.status === 429 ||
+          error?.status === 500 ||
+          error?.status === 502 ||
+          error?.status === 503 ||
+          error?.status === 504 ||
+          error?.name ===
+            "AbortError" ||
+          String(
+            error?.message || ""
+          )
+            .toLowerCase()
+            .includes("fetch failed");
+
+        if (
+          retryable &&
+          attempt < MAX_ATTEMPTS
+        ) {
+
+          console.log(
+            `Waiting ${RETRY_DELAY / 1000}s before retry...`
+          );
+
+          await sleep(
+            RETRY_DELAY
+          );
+
+        } else if (
+          !retryable
+        ) {
+          break;
+        }
+      }
     }
+
+    console.log(
+      `Trying next Gemini model...`
+    );
   }
-  throw new Error("All Gemini models failed.");
+
+  throw new Error(
+    `All Gemini attempts failed. Last error: ${lastError?.message}`
+  );
 }
+
+// ============================================================
+// 5. JSON CLEANER
+// ============================================================
 
 function cleanJson(text) {
-  let val = String(text || "").trim();
-  val = val.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
-  const firstBrace = val.indexOf("{");
-  const lastBrace = val.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-    val = val.slice(firstBrace, lastBrace + 1);
+
+  let value =
+    String(text || "")
+      .trim();
+
+  value =
+    value
+      .replace(
+        /^```json\s*/i,
+        ""
+      )
+      .replace(
+        /^```\s*/i,
+        ""
+      )
+      .replace(
+        /\s*```$/i,
+        ""
+      )
+      .trim();
+
+  const firstBrace =
+    value.indexOf("{");
+
+  const lastBrace =
+    value.lastIndexOf("}");
+
+  if (
+    firstBrace !== -1 &&
+    lastBrace !== -1 &&
+    lastBrace > firstBrace
+  ) {
+
+    value =
+      value.slice(
+        firstBrace,
+        lastBrace + 1
+      );
   }
-  return val.trim();
+
+  return value.trim();
 }
 
 // ============================================================
-// 3. YOUTUBE API WITH SAFE FALLBACK
+// 6. PARSE GEMINI JSON
 // ============================================================
-async function fetchYouTubeVideos(query) {
-  if (!youtubeKey) return [];
+
+function parseArticleJson(raw) {
+
+  const cleaned =
+    cleanJson(raw);
+
   try {
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=2&q=${encodeURIComponent(query + " tutorial 2026")}&type=video&key=${youtubeKey}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    if (!data.items) return [];
+
+    return JSON.parse(
+      cleaned
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Gemini returned invalid article JSON."
+    );
+
+    console.error(
+      cleaned.slice(0, 5000)
+    );
+
+    throw new Error(
+      `Invalid article JSON: ${error.message}`
+    );
+  }
+}
+
+// ============================================================
+// 7. YOUTUBE
+// ============================================================
+
+async function fetchYouTubeVideos(
+  query
+) {
+
+  if (!youtubeKey) {
+    console.log(
+      "YouTube API key not configured. Continuing without videos."
+    );
+
+    return [];
+  }
+
+  try {
+
+    const url =
+      new URL(
+        "https://www.googleapis.com/youtube/v3/search"
+      );
+
+    url.searchParams.set(
+      "part",
+      "snippet"
+    );
+
+    url.searchParams.set(
+      "maxResults",
+      "2"
+    );
+
+    url.searchParams.set(
+      "q",
+      `${query} tutorial 2026`
+    );
+
+    url.searchParams.set(
+      "type",
+      "video"
+    );
+
+    url.searchParams.set(
+      "safeSearch",
+      "strict"
+    );
+
+    url.searchParams.set(
+      "key",
+      youtubeKey
+    );
+
+    const controller =
+      new AbortController();
+
+    const timeout =
+      setTimeout(
+        () => controller.abort(),
+        30000
+      );
+
+    let response;
+
+    try {
+
+      response =
+        await fetch(
+          url,
+          {
+            signal:
+              controller.signal
+          }
+        );
+
+    } finally {
+
+      clearTimeout(
+        timeout
+      );
+    }
+
+    const text =
+      await response.text();
+
+    if (!response.ok) {
+      throw new Error(
+        `YouTube API ${response.status}: ${text}`
+      );
+    }
+
+    const data =
+      JSON.parse(text);
+
+    if (
+      !Array.isArray(
+        data?.items
+      )
+    ) {
+      return [];
+    }
+
     return data.items
-      .filter((item) => item?.id?.videoId)
+      .filter(
+        (item) =>
+          item?.id?.videoId
+      )
       .map((item) => ({
-        title: item.snippet.title,
-        videoId: item.id.videoId
+        title:
+          item?.snippet
+            ?.title ||
+          "Beauty Tutorial",
+
+        videoId:
+          item.id.videoId
       }));
-  } catch (err) {
-    console.warn("YouTube API warning:", err.message);
+
+  } catch (error) {
+
+    console.warn(
+      "YouTube API warning:",
+      error.message
+    );
+
     return [];
   }
 }
 
 // ============================================================
-// 4. MAIN GENERATION PIPELINE
+// 8. ARTICLE VALIDATION
 // ============================================================
+
+function validateArticle(article) {
+
+  if (
+    !article ||
+    typeof article !== "object"
+  ) {
+    throw new Error(
+      "Gemini article response is not an object"
+    );
+  }
+
+  const required =
+    [
+      "title",
+      "slug",
+      "description",
+      "content"
+    ];
+
+  for (
+    const field of required
+  ) {
+
+    if (
+      !article[field] ||
+      typeof article[field] !==
+        "string"
+    ) {
+      throw new Error(
+        `Article field missing: ${field}`
+      );
+    }
+  }
+
+  if (
+    !Array.isArray(
+      article.keywords
+    )
+  ) {
+    article.keywords = [];
+  }
+
+  if (
+    !Array.isArray(
+      article.faq
+    )
+  ) {
+    article.faq = [];
+  }
+
+  return article;
+}
+
+// ============================================================
+// 9. MAIN PIPELINE
+// ============================================================
+
 async function run() {
-  const topic = selectUniqueTopic();
-  console.log(`Generating article for: "${topic}"...`);
+
+  const topic =
+    selectUniqueTopic();
+
+  console.log(
+    "================================="
+  );
+
+  console.log(
+    "DAILY BEAUTY ARTICLE"
+  );
+
+  console.log(
+    "================================="
+  );
+
+  console.log(
+    `Generating article for: "${topic}"`
+  );
+
+  // ----------------------------------------------------------
+  // GEMINI PROMPT
+  // ----------------------------------------------------------
 
   const prompt = `
-You are a senior beauty editor for "BeautyTrend Daily".
-Write a comprehensive, human-written editorial beauty article about: "${topic}".
+You are a senior beauty editor for
+"BeautyTrend Daily".
+
+Write a comprehensive,
+original beauty editorial about:
+
+"${topic}"
+
 Current year: 2026.
 
-Return ONLY a valid JSON object matching this structure (no markdown fences, no extra text):
+The article should be useful for an
+international audience.
+
+Requirements:
+
+- Around 1200 words
+- Natural human editorial style
+- Original wording
+- Strong SEO
+- Helpful information
+- Mobile-friendly structure
+- No keyword stuffing
+- No invented statistics
+- No invented quotes
+- No AI references
+- No source copying
+
+Include:
+
+- Introduction
+- Main trend discussion
+- Styling ideas
+- Practical tips
+- Maintenance
+- Who the style suits
+- Final thoughts
+- 4 FAQs
+
+Return ONLY valid JSON.
+
+IMPORTANT:
+
+Do NOT use markdown code fences.
+
+Do NOT write anything before the JSON.
+
+Do NOT write anything after the JSON.
+
+The content field MUST contain Markdown.
+
+Escape quotation marks correctly
+inside JSON strings.
+
+Required structure:
+
 {
-  "title": "Compelling SEO Title 2026",
-  "slug": "seo-friendly-slug-2026",
-  "description": "Engaging meta description under 160 characters",
-  "excerpt": "Short 2-sentence preview excerpt",
-  "category": "Haircuts | Hairstyles | Nail Art | Hair Colors | Skincare",
-  "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
-  "content": "Full Markdown article text with ## headings, styling guide, maintenance routines, and suitability tips.",
+  "title": "SEO title",
+  "slug": "seo-friendly-slug",
+  "description": "Meta description under 160 characters",
+  "excerpt": "Short article preview",
+  "category": "Haircuts",
+  "keywords": [
+    "keyword 1",
+    "keyword 2",
+    "keyword 3",
+    "keyword 4",
+    "keyword 5"
+  ],
+  "content": "Markdown article",
   "faq": [
-    { "question": "Question 1?", "answer": "Detailed answer 1." },
-    { "question": "Question 2?", "answer": "Detailed answer 2." },
-    { "question": "Question 3?", "answer": "Detailed answer 3." }
+    {
+      "question": "Question?",
+      "answer": "Answer."
+    },
+    {
+      "question": "Question?",
+      "answer": "Answer."
+    },
+    {
+      "question": "Question?",
+      "answer": "Answer."
+    },
+    {
+      "question": "Question?",
+      "answer": "Answer."
+    }
   ]
 }
 `;
 
-  const rawJson = await callGeminiSafe(prompt);
-  const article = JSON.parse(cleanJson(rawJson));
+  // ----------------------------------------------------------
+  // GENERATE ARTICLE
+  // ----------------------------------------------------------
 
-  const videos = await fetchYouTubeVideos(article.title);
-  const now = new Date().toISOString().split("T")[0];
+  let article;
 
-  const imageUrl = "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80";
-  const imageCredit = "Photo on Unsplash (Free Commercial Use)";
+  let lastArticleError;
 
-  // Strict Astro Content Collections Frontmatter
+  for (
+    let attempt = 1;
+    attempt <= 2;
+    attempt++
+  ) {
+
+    try {
+
+      console.log(
+        `Article generation attempt ${attempt}/2`
+      );
+
+      const rawJson =
+        await callGeminiSafe(
+          prompt
+        );
+
+      article =
+        parseArticleJson(
+          rawJson
+        );
+
+      article =
+        validateArticle(
+          article
+        );
+
+      break;
+
+    } catch (error) {
+
+      lastArticleError =
+        error;
+
+      console.error(
+        `Article generation failed: ${error.message}`
+      );
+
+      if (
+        attempt < 2
+      ) {
+
+        console.log(
+          "Retrying article generation..."
+        );
+
+        await sleep(3000);
+      }
+    }
+  }
+
+  if (!article) {
+
+    throw new Error(
+      `Article generation failed after retries: ${lastArticleError?.message}`
+    );
+  }
+
+  console.log(
+    `Article title: ${article.title}`
+  );
+
+  // ----------------------------------------------------------
+  // YOUTUBE
+  // ----------------------------------------------------------
+
+  const videos =
+    await fetchYouTubeVideos(
+      article.title
+    );
+
+  console.log(
+    `YouTube videos found: ${videos.length}`
+  );
+
+  // ----------------------------------------------------------
+  // DATE
+  // ----------------------------------------------------------
+
+  const now =
+    new Date()
+      .toISOString()
+      .split("T")[0];
+
+  // ----------------------------------------------------------
+  // FRONTMATTER
+  // ----------------------------------------------------------
+
+  const keywords =
+    Array.isArray(
+      article.keywords
+    )
+      ? article.keywords
+      : [];
+
+  const faq =
+    Array.isArray(
+      article.faq
+    )
+      ? article.faq
+      : [];
+
   const frontmatter = `---
 title: ${JSON.stringify(article.title)}
 description: ${JSON.stringify(article.description)}
 excerpt: ${JSON.stringify(article.excerpt || article.description)}
 category: ${JSON.stringify(article.category || "Beauty")}
 keywords:
-${(article.keywords || []).map((k) => `  - ${JSON.stringify(k)}`).join("\n")}
+${
+  keywords.length > 0
+    ? keywords
+        .map(
+          (keyword) =>
+            `  - ${JSON.stringify(keyword)}`
+        )
+        .join("\n")
+    : "  []"
+}
 publishedAt: "${now}"
 updatedAt: "${now}"
 youtube:
-${videos.length > 0 ? videos.map((v) => `  - title: ${JSON.stringify(v.title)}\n    videoId: ${JSON.stringify(v.videoId)}`).join("\n") : "  []"}
-faq:
-${(article.faq || []).map((f) => `  - question: ${JSON.stringify(f.question)}\n    answer: ${JSON.stringify(f.answer)}`).join("\n")}
----
-
-<figure class="featured-image-container my-6">
-  <img src="${imageUrl}" alt="${article.title}" class="w-full rounded-2xl shadow-lg object-cover max-h-[500px]" loading="lazy" />
-  <figcaption class="text-xs text-gray-500 mt-2 text-center">${imageCredit}</figcaption>
-</figure>
-
-${article.content}
-
 ${
   videos.length > 0
-    ? `\n## Video Tutorials & Inspiration\n\n` +
-      videos
+    ? videos
         .map(
-          (v) =>
-            `<div class="video-embed my-6 aspect-video w-full rounded-2xl overflow-hidden shadow-md"><iframe class="w-full h-full" src="https://www.youtube.com/embed/${v.videoId}" title="${v.title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`
+          (video) =>
+            `  - title: ${JSON.stringify(video.title)}
+    videoId: ${JSON.stringify(video.videoId)}`
         )
         .join("\n")
-    : ""
+    : "  []"
 }
+faq:
+${
+  faq.length > 0
+    ? faq
+        .map(
+          (item) =>
+            `  - question: ${JSON.stringify(item.question)}
+    answer: ${JSON.stringify(item.answer)}`
+        )
+        .join("\n")
+    : "  []"
+}
+---
+
 `;
 
-  const filename = `${article.slug}.md`;
-  const filePath = path.join(ARTICLES_DIR, filename);
+  // ----------------------------------------------------------
+  // ARTICLE CONTENT
+  // ----------------------------------------------------------
 
-  fs.writeFileSync(filePath, frontmatter, "utf8");
-  console.log(`✅ Successfully generated & saved: ${filePath}`);
+  let content =
+    article.content
+      .trim();
+
+  // YouTube embeds are added only
+  // when valid videos exist.
+
+  if (
+    videos.length > 0
+  ) {
+
+    content +=
+      `\n\n## Video Tutorials & Inspiration\n\n`;
+
+    content +=
+      videos
+        .map(
+          (video) =>
+            `<div class="video-embed" style="position:relative;width:100%;aspect-ratio:16/9;margin:24px 0;overflow:hidden;border-radius:16px;">
+  <iframe
+    src="https://www.youtube.com/embed/${video.videoId}"
+    title="${video.title.replace(/"/g, "&quot;")}"
+    loading="lazy"
+    style="width:100%;height:100%;border:0;"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen>
+  </iframe>
+</div>`
+        )
+        .join("\n\n");
+  }
+
+  // ----------------------------------------------------------
+  // FINAL MARKDOWN
+  // ----------------------------------------------------------
+
+  const finalContent =
+    frontmatter +
+    content +
+    "\n";
+
+  // ----------------------------------------------------------
+  // SAFE SLUG
+  // ----------------------------------------------------------
+
+  const safeSlug =
+    slugify(
+      article.slug
+    );
+
+  if (!safeSlug) {
+    throw new Error(
+      "Generated article has an invalid slug"
+    );
+  }
+
+  const filename =
+    `${safeSlug}.md`;
+
+  const filePath =
+    path.join(
+      ARTICLES_DIR,
+      filename
+    );
+
+  // ----------------------------------------------------------
+  // WRITE ARTICLE
+  // ----------------------------------------------------------
+
+  fs.writeFileSync(
+    filePath,
+    finalContent,
+    "utf8"
+  );
+
+  console.log(
+    "================================="
+  );
+
+  console.log(
+    "ARTICLE CREATED SUCCESSFULLY"
+  );
+
+  console.log(
+    "================================="
+  );
+
+  console.log(
+    `Title: ${article.title}`
+  );
+
+  console.log(
+    `Slug: ${safeSlug}`
+  );
+
+  console.log(
+    `Category: ${article.category || "Beauty"}`
+  );
+
+  console.log(
+    `YouTube videos: ${videos.length}`
+  );
+
+  console.log(
+    `File: ${filePath}`
+  );
+
+  console.log(
+    "================================="
+  );
 }
 
-run().catch((err) => {
-  console.error("Fatal Error:", err);
-  process.exit(1);
-});
+// ============================================================
+// RUN
+// ============================================================
+
+run().catch(
+  (error) => {
+
+    console.error(
+      "================================="
+    );
+
+    console.error(
+      "FATAL ERROR"
+    );
+
+    console.error(
+      "================================="
+    );
+
+    console.error(
+      error
+    );
+
+    process.exit(1);
+  }
+);
