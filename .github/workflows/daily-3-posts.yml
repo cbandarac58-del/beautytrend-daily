@@ -36,17 +36,28 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       # ==========================================
-      # 3. INSTALL DEPENDENCIES
+      # 3. SHOW NODE VERSION
+      # ==========================================
+      - name: Check Node and npm versions
+        run: |
+          echo "Node version:"
+          node --version
+
+          echo "npm version:"
+          npm --version
+
+      # ==========================================
+      # 4. INSTALL DEPENDENCIES
       # ==========================================
       - name: Install dependencies
         run: |
           npm install
 
       # ==========================================
-      # 4. GENERATE ARTICLE(S)
+      # 5. GENERATE ARTICLE(S)
       # ==========================================
       - name: Generate Beauty Article(s)
         env:
@@ -87,7 +98,7 @@ jobs:
           done
 
       # ==========================================
-      # 5. VERIFY GENERATED ARTICLES
+      # 6. VERIFY GENERATED ARTICLES
       # ==========================================
       - name: Verify generated articles
         run: |
@@ -114,7 +125,7 @@ jobs:
           find src/content/articles -maxdepth 1 -type f -name "*.md" -print
 
       # ==========================================
-      # 6. BUILD ASTRO SITE
+      # 7. BUILD ASTRO SITE
       # ==========================================
       - name: Build Astro site
         run: |
@@ -130,7 +141,7 @@ jobs:
           echo "========================================"
 
       # ==========================================
-      # 7. SHOW GIT CHANGES
+      # 8. CHECK GIT CHANGES
       # ==========================================
       - name: Check Git changes
         run: |
@@ -141,7 +152,7 @@ jobs:
           git status --short
 
       # ==========================================
-      # 8. COMMIT NEW ARTICLES
+      # 9. COMMIT NEW ARTICLES
       # ==========================================
       - name: Commit new articles
         run: |
@@ -166,7 +177,7 @@ jobs:
           git commit -m "Auto-publish beauty trend article"
 
       # ==========================================
-      # 9. PUSH TO GITHUB
+      # 10. PUSH TO GITHUB
       # ==========================================
       - name: Push articles to GitHub
         run: |
@@ -182,4 +193,3 @@ jobs:
           echo "========================================"
           echo "ARTICLE PUBLISHED TO GITHUB"
           echo "========================================"
-          echo "Cloudflare Pages should now deploy."
