@@ -1,13 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 
-const articles = (await getCollection('articles'))
-  .sort((a, b) => {
-    return (
-      new Date(b.data.publishedAt).getTime() -
-      new Date(a.data.publishedAt).getTime()
-    );
-  });
+const siteUrl = 'https://beautytrend-daily.pages.dev';
 
 const categories = [
   'Haircuts',
@@ -18,9 +12,20 @@ const categories = [
   'Beauty Trends'
 ];
 
-const siteUrl = 'https://beautytrend-daily.pages.dev';
+const articles = (await getCollection('articles'))
+  .sort(
+    (a, b) =>
+      new Date(b.data.publishedAt).getTime() -
+      new Date(a.data.publishedAt).getTime()
+  );
 
 const latestArticles = articles.slice(0, 12);
+
+const categorySlug = (category: string) =>
+  category.toLowerCase().replace(/\s+/g, '-');
+
+const articleSlug = (id: string) =>
+  id.replace(/\.(md|mdx)$/, '');
 ---
 
 <!doctype html>
@@ -33,7 +38,10 @@ const latestArticles = articles.slice(0, 12);
       content="width=device-width, initial-scale=1.0"
     />
 
-    <meta name="theme-color" content="#faf8f7" />
+    <meta
+      name="theme-color"
+      content="#faf8f7"
+    />
 
     <title>
       BeautyTrend Daily | Hair, Hairstyles, Nails & Beauty Trends
@@ -41,12 +49,12 @@ const latestArticles = articles.slice(0, 12);
 
     <meta
       name="description"
-      content="Discover haircut ideas, hairstyle inspiration, nail art, manicure trends and practical beauty guides from BeautyTrend Daily."
+      content="Discover the latest haircut trends, hairstyles, hair colors, nail art, manicure ideas and beauty inspiration from BeautyTrend Daily."
     />
 
     <meta
       name="robots"
-      content="index, follow"
+      content="index, follow, max-image-preview:large"
     />
 
     <link
@@ -68,7 +76,7 @@ const latestArticles = articles.slice(0, 12);
 
     <meta
       property="og:description"
-      content="Discover fresh hair, nail and beauty inspiration, trends and practical beauty guides."
+      content="Explore fresh haircut ideas, hairstyles, hair colors, nail art and beauty trends."
     />
 
     <meta
@@ -79,6 +87,11 @@ const latestArticles = articles.slice(0, 12);
     <meta
       property="og:site_name"
       content="BeautyTrend Daily"
+    />
+
+    <meta
+      property="og:locale"
+      content="en_US"
     />
 
     <!-- Twitter -->
@@ -95,10 +108,10 @@ const latestArticles = articles.slice(0, 12);
 
     <meta
       name="twitter:description"
-      content="Discover fresh hair, nail and beauty inspiration, trends and practical beauty guides."
+      content="Fresh beauty inspiration, hairstyle ideas, nail art and beauty trends."
     />
 
-    <!-- Website Schema -->
+    <!-- WebSite Schema -->
 
     <script
       type="application/ld+json"
@@ -108,7 +121,8 @@ const latestArticles = articles.slice(0, 12);
         name: 'BeautyTrend Daily',
         url: siteUrl,
         description:
-          'Hair, hairstyles, nail and beauty trends and practical beauty guides.',
+          'Hair, hairstyles, hair color, nail art and beauty trends.',
+        inLanguage: 'en-US'
       })}
     />
 
@@ -120,9 +134,32 @@ const latestArticles = articles.slice(0, 12);
         '@context': 'https://schema.org',
         '@type': 'Organization',
         name: 'BeautyTrend Daily',
-        url: siteUrl,
+        url: siteUrl
       })}
     />
+
+    <!-- ItemList Schema -->
+
+    {
+      latestArticles.length > 0 && (
+        <script
+          type="application/ld+json"
+          set:html={JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            name: 'Latest BeautyTrend Daily Articles',
+            itemListElement: latestArticles.map(
+              (article, index) => ({
+                '@type': 'ListItem',
+                position: index + 1,
+                url: `${siteUrl}/articles/${articleSlug(article.id)}/`,
+                name: article.data.title
+              })
+            )
+          })}
+        />
+      )
+    }
   </head>
 
   <body>
@@ -130,6 +167,7 @@ const latestArticles = articles.slice(0, 12);
     <!-- HEADER -->
 
     <header class="header">
+
       <div class="container nav">
 
         <a
@@ -141,18 +179,21 @@ const latestArticles = articles.slice(0, 12);
         </a>
 
         <nav aria-label="Main navigation">
+
           {categories.map((category) => (
+
             <a
-              href={`/category/${category
-                .toLowerCase()
-                .replaceAll(' ', '-')}/`}
+              href={`/category/${categorySlug(category)}/`}
             >
               {category}
             </a>
+
           ))}
+
         </nav>
 
       </div>
+
     </header>
 
 
@@ -163,6 +204,7 @@ const latestArticles = articles.slice(0, 12);
       <!-- HERO -->
 
       <section class="hero">
+
         <div class="container hero-inner">
 
           <p class="eyebrow">
@@ -175,25 +217,40 @@ const latestArticles = articles.slice(0, 12);
           </h1>
 
           <p class="intro">
-            Explore haircut trends, modern hairstyles, beautiful
-            nail designs and practical beauty guides to help you
-            find your next look.
+            Explore the latest haircut trends, modern
+            hairstyles, beautiful nail designs, hair colors
+            and practical beauty guides for your next look.
           </p>
 
-          <a
-            href="#latest"
-            class="button"
-          >
-            Explore Latest Articles
-          </a>
+          <div class="hero-actions">
+
+            <a
+              href="#latest"
+              class="button"
+            >
+              Explore Latest Articles
+            </a>
+
+            <a
+              href="#categories"
+              class="secondary-button"
+            >
+              Browse Categories
+            </a>
+
+          </div>
 
         </div>
+
       </section>
 
 
       <!-- CATEGORIES -->
 
-      <section class="category-section">
+      <section
+        id="categories"
+        class="category-section"
+      >
 
         <div class="container">
 
@@ -201,17 +258,32 @@ const latestArticles = articles.slice(0, 12);
             EXPLORE BY INTEREST
           </p>
 
+          <h2 class="category-title">
+            Find Your Beauty Style
+          </h2>
+
           <div class="category-list">
 
             {categories.map((category) => (
+
               <a
                 class="category-pill"
-                href={`/category/${category
-                  .toLowerCase()
-                  .replaceAll(' ', '-')}/`}
+                href={`/category/${categorySlug(category)}/`}
               >
-                {category}
+
+                <span>
+                  {category}
+                </span>
+
+                <span
+                  class="pill-arrow"
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+
               </a>
+
             ))}
 
           </div>
@@ -245,8 +317,8 @@ const latestArticles = articles.slice(0, 12);
             </div>
 
             <p>
-              Ideas, trends and practical guides for your
-              next look.
+              The newest ideas, trends and practical guides
+              from BeautyTrend Daily.
             </p>
 
           </div>
@@ -259,33 +331,42 @@ const latestArticles = articles.slice(0, 12);
 
                 {latestArticles.map((article) => (
 
-                  <article
-                    class="article-card"
-                  >
+                  <article class="article-card">
 
                     <a
                       class="article-link"
-                      href={`/articles/${article.id.replace(
-                        /\.md$/,
-                        ''
-                      )}/`}
+                      href={`/articles/${articleSlug(article.id)}/`}
                     >
+
+                      <!-- ARTICLE VISUAL -->
 
                       <div
                         class="article-art"
                         aria-hidden="true"
                       >
 
-                        <span>
-                          BEAUTY
-                        </span>
+                        <div class="art-top">
+                          <span>
+                            BEAUTYTREND DAILY
+                          </span>
 
-                        <span class="art-star">
-                          ✳
-                        </span>
+                          <span class="art-star">
+                            ✳
+                          </span>
+                        </div>
+
+                        <div class="art-center">
+                          {article.data.category}
+                        </div>
+
+                        <div class="art-bottom">
+                          BEAUTY · STYLE · TRENDS
+                        </div>
 
                       </div>
 
+
+                      <!-- ARTICLE INFO -->
 
                       <div class="article-info">
 
@@ -304,7 +385,10 @@ const latestArticles = articles.slice(0, 12);
                         </p>
 
                         <span class="read-more">
-                          Read article →
+                          Read article
+                          <span aria-hidden="true">
+                            →
+                          </span>
                         </span>
 
                       </div>
@@ -321,19 +405,56 @@ const latestArticles = articles.slice(0, 12);
 
               <div class="empty-card">
 
+                <div class="empty-icon">
+                  ✦
+                </div>
+
                 <h3>
-                  Your beauty inspiration starts here
+                  Beauty inspiration is coming soon
                 </h3>
 
                 <p>
                   New articles will appear here when they
-                  are generated and published to the website.
+                  are generated and published.
                 </p>
 
               </div>
 
             )
           }
+
+        </div>
+
+      </section>
+
+
+      <!-- EDITORIAL CTA -->
+
+      <section class="editorial">
+
+        <div class="container editorial-inner">
+
+          <p class="eyebrow">
+            BEAUTYTREND DAILY
+          </p>
+
+          <h2>
+            Stay Inspired.
+            <span>Stay Beautiful.</span>
+          </h2>
+
+          <p>
+            Discover fresh beauty ideas, trending styles and
+            practical inspiration designed for modern beauty
+            lovers around the world.
+          </p>
+
+          <a
+            href="#latest"
+            class="button"
+          >
+            Explore Beauty Trends
+          </a>
 
         </div>
 
@@ -348,21 +469,53 @@ const latestArticles = articles.slice(0, 12);
 
       <div class="container footer-inner">
 
-        <a
-          href="/"
-          class="logo"
-        >
-          BeautyTrend<span>Daily</span>
-        </a>
+        <div class="footer-brand">
 
-        <p>
-          Hair, nails, beauty trends and inspiration.
-        </p>
+          <a
+            href="/"
+            class="logo"
+          >
+            BeautyTrend<span>Daily</span>
+          </a>
+
+          <p>
+            Hair, nails, beauty trends and inspiration.
+          </p>
+
+        </div>
+
+
+        <div class="footer-links">
+
+          <p class="footer-heading">
+            Explore
+          </p>
+
+          {categories.map((category) => (
+
+            <a
+              href={`/category/${categorySlug(category)}/`}
+            >
+              {category}
+            </a>
+
+          ))}
+
+        </div>
+
+      </div>
+
+
+      <div class="container footer-bottom">
 
         <p>
           © {new Date().getFullYear()}
-          BeautyTrend Daily.
+          BeautyTrend Daily. All rights reserved.
         </p>
+
+        <a href="/">
+          BeautyTrend Daily
+        </a>
 
       </div>
 
@@ -384,6 +537,7 @@ const latestArticles = articles.slice(0, 12);
 
   :global(body) {
     margin: 0;
+
     font-family:
       Inter,
       ui-sans-serif,
@@ -394,7 +548,10 @@ const latestArticles = articles.slice(0, 12);
       sans-serif;
 
     background: #faf8f7;
+
     color: #292221;
+
+    -webkit-font-smoothing: antialiased;
   }
 
   :global(a) {
@@ -418,8 +575,10 @@ const latestArticles = articles.slice(0, 12);
 
   .header {
     position: sticky;
+
     top: 0;
-    z-index: 10;
+
+    z-index: 20;
 
     background: rgba(
       255,
@@ -428,16 +587,20 @@ const latestArticles = articles.slice(0, 12);
       0.96
     );
 
-    border-bottom: 1px solid #eee6e3;
+    border-bottom:
+      1px solid #eee6e3;
 
-    backdrop-filter: blur(12px);
+    backdrop-filter:
+      blur(14px);
   }
 
   .nav {
     min-height: 72px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 28px;
@@ -449,6 +612,7 @@ const latestArticles = articles.slice(0, 12);
     text-decoration: none;
 
     font-size: 23px;
+
     font-weight: 800;
 
     letter-spacing: -1px;
@@ -465,6 +629,7 @@ const latestArticles = articles.slice(0, 12);
 
   nav {
     display: flex;
+
     align-items: center;
 
     gap: 20px;
@@ -479,24 +644,57 @@ const latestArticles = articles.slice(0, 12);
   }
 
   nav a {
+    position: relative;
+
     color: #6d6260;
 
     font-size: 13px;
 
+    font-weight: 500;
+
     text-decoration: none;
 
     white-space: nowrap;
+
+    padding: 25px 0;
+  }
+
+  nav a::after {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+
+    right: 0;
+
+    bottom: 17px;
+
+    height: 1px;
+
+    background: #a15e68;
+
+    transform: scaleX(0);
+
+    transition:
+      transform .2s ease;
   }
 
   nav a:hover {
-    color: #a04d60;
+    color: #a15e68;
+  }
+
+  nav a:hover::after {
+    transform: scaleX(1);
   }
 
 
   /* HERO */
 
   .hero {
-    padding: 105px 0 110px;
+    padding:
+      105px 0
+      110px;
 
     background:
       radial-gradient(
@@ -554,7 +752,7 @@ const latestArticles = articles.slice(0, 12);
   }
 
   .intro {
-    max-width: 620px;
+    max-width: 650px;
 
     color: #716563;
 
@@ -562,7 +760,19 @@ const latestArticles = articles.slice(0, 12);
 
     font-size: 17px;
 
-    margin: 25px 0 30px;
+    margin:
+      27px 0
+      30px;
+  }
+
+  .hero-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    flex-wrap: wrap;
   }
 
   .button {
@@ -572,7 +782,8 @@ const latestArticles = articles.slice(0, 12);
 
     color: white;
 
-    padding: 15px 23px;
+    padding:
+      15px 23px;
 
     border-radius: 5px;
 
@@ -581,62 +792,149 @@ const latestArticles = articles.slice(0, 12);
     font-size: 14px;
 
     font-weight: 700;
+
+    transition:
+      background .2s,
+      transform .2s;
   }
 
   .button:hover {
     background: #a15e68;
+
+    transform: translateY(-1px);
   }
 
-
-  /* CATEGORY SECTION */
-
-  .category-section {
-    padding: 35px 0;
-
-    background: white;
-
-    border-bottom: 1px solid #eee6e3;
-  }
-
-  .category-list {
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 10px;
-  }
-
-  .category-pill {
+  .secondary-button {
     display: inline-block;
 
-    padding: 10px 15px;
+    padding:
+      14px 21px;
 
-    border: 1px solid #eadedb;
+    border:
+      1px solid #d8c8c5;
 
-    border-radius: 30px;
+    border-radius: 5px;
 
-    color: #655451;
+    color: #5e504d;
 
-    font-size: 13px;
+    background: rgba(
+      255,
+      255,
+      255,
+      0.45
+    );
 
     text-decoration: none;
 
-    transition:
-      border-color .2s,
-      color .2s;
+    font-size: 14px;
+
+    font-weight: 700;
   }
 
-  .category-pill:hover {
+  .secondary-button:hover {
     border-color: #a15e68;
 
     color: #a15e68;
   }
 
 
+  /* CATEGORIES */
+
+  .category-section {
+    padding:
+      55px 0
+      60px;
+
+    background: white;
+
+    border-bottom:
+      1px solid #eee6e3;
+  }
+
+  .category-title {
+    margin:
+      -5px 0
+      25px;
+
+    font-size:
+      clamp(
+        28px,
+        4vw,
+        40px
+      );
+
+    letter-spacing: -1.5px;
+  }
+
+  .category-list {
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+
+    gap: 12px;
+  }
+
+  .category-pill {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding:
+      17px 19px;
+
+    border:
+      1px solid #eadedb;
+
+    border-radius: 7px;
+
+    color: #655451;
+
+    background: #fff;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition:
+      border-color .2s,
+      color .2s,
+      transform .2s,
+      background .2s;
+  }
+
+  .category-pill:hover {
+    border-color: #a15e68;
+
+    color: #a15e68;
+
+    background: #fffafa;
+
+    transform: translateY(-2px);
+  }
+
+  .pill-arrow {
+    font-size: 17px;
+
+    opacity: .65;
+  }
+
+
   /* LATEST */
 
   .latest {
-    padding: 80px 0 100px;
+    padding:
+      80px 0
+      100px;
   }
 
   .section-heading {
@@ -674,6 +972,8 @@ const latestArticles = articles.slice(0, 12);
     line-height: 1.7;
 
     max-width: 340px;
+
+    margin: 0;
   }
 
 
@@ -694,23 +994,29 @@ const latestArticles = articles.slice(0, 12);
   .article-card {
     background: white;
 
-    border: 1px solid #eee5e2;
+    border:
+      1px solid #eee5e2;
 
     border-radius: 10px;
 
     overflow: hidden;
 
     transition:
-      transform .2s,
-      box-shadow .2s;
+      transform .2s ease,
+      box-shadow .2s ease;
   }
 
   .article-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
 
     box-shadow:
-      0 12px 30px
-      rgba(56, 37, 34, 0.08);
+      0 15px 35px
+      rgba(
+        56,
+        37,
+        34,
+        0.09
+      );
   }
 
   .article-link {
@@ -727,13 +1033,13 @@ const latestArticles = articles.slice(0, 12);
   /* ARTICLE VISUAL */
 
   .article-art {
-    min-height: 170px;
+    min-height: 185px;
 
-    padding: 20px;
+    padding: 19px 20px;
 
     display: flex;
 
-    align-items: flex-start;
+    flex-direction: column;
 
     justify-content: space-between;
 
@@ -745,8 +1051,16 @@ const latestArticles = articles.slice(0, 12);
       );
 
     color: #85565c;
+  }
 
-    font-size: 10px;
+  .art-top {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    font-size: 9px;
 
     font-weight: 800;
 
@@ -754,9 +1068,39 @@ const latestArticles = articles.slice(0, 12);
   }
 
   .art-star {
-    font-size: 36px;
+    font-size: 31px;
+
+    line-height: 1;
 
     font-weight: 400;
+  }
+
+  .art-center {
+    align-self: center;
+
+    text-align: center;
+
+    font-family:
+      Georgia,
+      serif;
+
+    font-size: 25px;
+
+    font-style: italic;
+
+    color: #744c53;
+
+    padding: 15px;
+  }
+
+  .art-bottom {
+    font-size: 8px;
+
+    font-weight: 700;
+
+    letter-spacing: 1.5px;
+
+    opacity: .75;
   }
 
 
@@ -767,7 +1111,9 @@ const latestArticles = articles.slice(0, 12);
   }
 
   .article-category {
-    margin: 0 0 10px;
+    margin:
+      0 0
+      10px;
 
     color: #a15e68;
 
@@ -785,7 +1131,9 @@ const latestArticles = articles.slice(0, 12);
 
     line-height: 1.4;
 
-    margin: 0 0 12px;
+    margin:
+      0 0
+      12px;
 
     letter-spacing: -.4px;
   }
@@ -796,12 +1144,18 @@ const latestArticles = articles.slice(0, 12);
     font-size: 14px;
 
     line-height: 1.75;
+
+    margin-bottom: 0;
   }
 
   .read-more {
-    display: inline-block;
+    display: inline-flex;
 
-    margin-top: 10px;
+    align-items: center;
+
+    gap: 7px;
+
+    margin-top: 14px;
 
     color: #985964;
 
@@ -811,12 +1165,80 @@ const latestArticles = articles.slice(0, 12);
   }
 
 
+  /* EDITORIAL */
+
+  .editorial {
+    padding:
+      90px 0;
+
+    background:
+      #342526;
+
+    color: white;
+
+    text-align: center;
+  }
+
+  .editorial-inner {
+    max-width: 720px;
+  }
+
+  .editorial .eyebrow {
+    color: #d7aeb3;
+  }
+
+  .editorial h2 {
+    font-size:
+      clamp(
+        36px,
+        6vw,
+        58px
+      );
+
+    letter-spacing: -2.5px;
+  }
+
+  .editorial h2 span {
+    display: block;
+
+    color: #d7aeb3;
+
+    font-weight: 400;
+  }
+
+  .editorial p:not(.eyebrow) {
+    max-width: 600px;
+
+    margin:
+      22px auto
+      28px;
+
+    color: #d9cecb;
+
+    line-height: 1.8;
+  }
+
+  .editorial .button {
+    background: white;
+
+    color: #342526;
+  }
+
+  .editorial .button:hover {
+    background: #d7aeb3;
+
+    color: #342526;
+  }
+
+
   /* EMPTY */
 
   .empty-card {
-    padding: 60px 25px;
+    padding:
+      70px 25px;
 
-    border: 1px solid #eee5e2;
+    border:
+      1px solid #eee5e2;
 
     background: white;
 
@@ -825,10 +1247,24 @@ const latestArticles = articles.slice(0, 12);
     text-align: center;
   }
 
+  .empty-icon {
+    font-size: 32px;
+
+    color: #a15e68;
+
+    margin-bottom: 15px;
+  }
+
+  .empty-card h3 {
+    margin-bottom: 10px;
+  }
+
   .empty-card p {
     color: #756a68;
 
     line-height: 1.8;
+
+    margin: 0;
   }
 
 
@@ -837,27 +1273,99 @@ const latestArticles = articles.slice(0, 12);
   footer {
     background: white;
 
-    border-top: 1px solid #eee5e2;
+    border-top:
+      1px solid #eee5e2;
 
-    padding: 38px 0;
+    padding-top: 50px;
   }
 
   .footer-inner {
-    display: flex;
+    display: grid;
 
-    align-items: center;
+    grid-template-columns:
+      1fr
+      1fr;
 
-    justify-content: space-between;
+    gap: 50px;
 
-    flex-wrap: wrap;
-
-    gap: 15px;
+    padding-bottom: 45px;
   }
 
-  .footer-inner p {
+  .footer-brand p {
+    max-width: 300px;
+
     color: #756a68;
 
     font-size: 13px;
+
+    line-height: 1.7;
+  }
+
+  .footer-links {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 9px;
+  }
+
+  .footer-heading {
+    margin: 0 0 7px;
+
+    color: #342526;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1.5px;
+  }
+
+  .footer-links a {
+    color: #756a68;
+
+    font-size: 13px;
+
+    text-decoration: none;
+  }
+
+  .footer-links a:hover {
+    color: #a15e68;
+  }
+
+  .footer-bottom {
+    padding:
+      20px 0;
+
+    border-top:
+      1px solid #eee5e2;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    flex-wrap: wrap;
+  }
+
+  .footer-bottom p,
+  .footer-bottom a {
+    margin: 0;
+
+    color: #8a7d7a;
+
+    font-size: 12px;
+
+    text-decoration: none;
+  }
+
+  .footer-bottom a:hover {
+    color: #a15e68;
   }
 
 
@@ -870,15 +1378,32 @@ const latestArticles = articles.slice(0, 12);
 
       flex-direction: column;
 
-      padding: 18px 0;
+      padding:
+        18px 0;
 
-      gap: 14px;
+      gap: 12px;
     }
 
     nav {
       width: 100%;
+    }
 
-      padding-bottom: 5px;
+    nav a {
+      padding:
+        3px 0
+        8px;
+    }
+
+    nav a::after {
+      display: none;
+    }
+
+    .category-list {
+      grid-template-columns:
+        repeat(
+          2,
+          minmax(0, 1fr)
+        );
     }
 
     .article-grid {
@@ -890,7 +1415,9 @@ const latestArticles = articles.slice(0, 12);
     }
 
     .hero {
-      padding: 75px 0;
+      padding:
+        75px 0
+        80px;
     }
 
     h1 {
@@ -909,6 +1436,37 @@ const latestArticles = articles.slice(0, 12);
         calc(100% - 30px);
     }
 
+    .hero {
+      padding:
+        65px 0
+        70px;
+    }
+
+    h1 {
+      font-size: 46px;
+
+      letter-spacing: -2.5px;
+    }
+
+    .intro {
+      font-size: 16px;
+    }
+
+    .hero-actions {
+      align-items: stretch;
+
+      flex-direction: column;
+    }
+
+    .button,
+    .secondary-button {
+      text-align: center;
+    }
+
+    .category-list {
+      grid-template-columns: 1fr;
+    }
+
     .article-grid {
       grid-template-columns: 1fr;
     }
@@ -918,13 +1476,25 @@ const latestArticles = articles.slice(0, 12);
     }
 
     .section-heading > p {
-      margin-top: 12px;
+      margin-top: 13px;
+    }
+
+    .latest {
+      padding:
+        65px 0
+        75px;
     }
 
     .footer-inner {
-      align-items: flex-start;
+      grid-template-columns: 1fr;
 
+      gap: 30px;
+    }
+
+    .footer-bottom {
       flex-direction: column;
+
+      gap: 8px;
     }
 
   }
