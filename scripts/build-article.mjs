@@ -23,6 +23,8 @@ const GEMINI_MODELS = [
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 5000;
 
+const MAX_YOUTUBE_VIDEOS = 3;
+
 const sleep = (ms) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -74,9 +76,11 @@ async function callGemini({
 
     try {
       const json = JSON.parse(text);
+
       errorMessage =
         json?.error?.message ||
         text;
+
     } catch {}
 
     const error = new Error(
@@ -92,6 +96,7 @@ async function callGemini({
 
   try {
     json = JSON.parse(text);
+
   } catch {
     throw new Error(
       "Gemini returned invalid HTTP JSON"
@@ -114,7 +119,7 @@ async function callGemini({
 }
 
 // ============================================================
-// SAFE GEMINI CALL WITH RETRY + MODEL FALLBACK
+// SAFE GEMINI CALL
 // ============================================================
 
 async function callGeminiSafe({
@@ -124,6 +129,7 @@ async function callGeminiSafe({
   let lastError = null;
 
   for (const model of GEMINI_MODELS) {
+
     console.log(
       `\nTrying Gemini model: ${model}`
     );
@@ -133,16 +139,19 @@ async function callGeminiSafe({
       attempt <= MAX_RETRIES;
       attempt++
     ) {
+
       try {
+
         console.log(
           `Attempt ${attempt}/${MAX_RETRIES}`
         );
 
-        const result = await callGemini({
-          model,
-          prompt,
-          useSearch
-        });
+        const result =
+          await callGemini({
+            model,
+            prompt,
+            useSearch
+          });
 
         console.log(
           `Gemini success: ${model}`
@@ -151,6 +160,7 @@ async function callGeminiSafe({
         return result;
 
       } catch (error) {
+
         lastError = error;
 
         console.log(
@@ -169,6 +179,7 @@ async function callGeminiSafe({
         }
 
         if (attempt < MAX_RETRIES) {
+
           console.log(
             `Waiting ${RETRY_DELAY_MS / 1000}s before retry...`
           );
@@ -197,31 +208,34 @@ async function callGeminiSafe({
 // ============================================================
 
 function cleanJson(text) {
-  let value = String(text || "")
-    .trim();
 
-  // Remove markdown fences
-  value = value
-    .replace(/^```json\s*/i, "")
-    .replace(/^```\s*/i, "")
-    .replace(/\s*```$/i, "")
-    .trim();
+  let value =
+    String(text || "")
+      .trim();
 
-  // Find first JSON object
-  const firstBrace = value.indexOf("{");
+  value =
+    value
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
 
-  // Find last JSON object
-  const lastBrace = value.lastIndexOf("}");
+  const firstBrace =
+    value.indexOf("{");
+
+  const lastBrace =
+    value.lastIndexOf("}");
 
   if (
     firstBrace !== -1 &&
     lastBrace !== -1 &&
     lastBrace > firstBrace
   ) {
-    value = value.slice(
-      firstBrace,
-      lastBrace + 1
-    );
+    value =
+      value.slice(
+        firstBrace,
+        lastBrace + 1
+      );
   }
 
   return value.trim();
@@ -232,11 +246,16 @@ function cleanJson(text) {
 // ============================================================
 
 function parseJson(text, label) {
-  const cleaned = cleanJson(text);
+
+  const cleaned =
+    cleanJson(text);
 
   try {
+
     return JSON.parse(cleaned);
+
   } catch (error) {
+
     console.error(
       `\n${label} JSON parsing failed.`
     );
@@ -252,7 +271,7 @@ function parseJson(text, label) {
 }
 
 // ============================================================
-// TOPIC
+// TOPICS
 // ============================================================
 
 const topics = [
@@ -345,6 +364,7 @@ console.log(
 let research;
 
 try {
+
   const researchText =
     await callGeminiSafe({
       prompt: researchPrompt,
@@ -414,6 +434,19 @@ STRUCTURE:
 - Final thoughts
 - 4 FAQs
 
+IMPORTANT HEADING RULES:
+
+- Do NOT repeat the article title as an H1 inside the content.
+- The article page already displays the title as the H1.
+- Do NOT create any heading named:
+  "Video Tutorials & Inspiration"
+- Do NOT create any heading named:
+  "Related Videos"
+- Do NOT create a video section.
+- Do NOT mention YouTube.
+- Do NOT create duplicate headings.
+- Use unique H2/H3 headings only.
+
 CONTENT:
 
 The content field must contain Markdown.
@@ -463,7 +496,11 @@ let article;
 
 let articleGenerationError = null;
 
-for (let attempt = 1; attempt <= 2; attempt++) {
+for (
+  let attempt = 1;
+  attempt <= 2;
+  attempt++
+) {
 
   try {
 
@@ -535,116 +572,580 @@ if (!Array.isArray(article.faq)) {
   article.faq = [];
 }
 
+// ============================================================
+// CLEAN ARTICLE CONTENT
+// ============================================================
+
+function cleanArticleContent(content, title) {
+
+  let cleaned =
+    String(content || "");
+
+  // Remove duplicate H1 article title
+  const escapedTitle =
+    title.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
+
+  cleaned =
+    cleaned.replace(
+      new RegExp(
+        `^\\s*#\\s+${escapedTitle}\\s*$`,
+        "gim"
+      ),
+      ""
+    );
+
+  // Remove unwanted video headings
+  cleaned =
+    cleaned.replace(
+      /^\s*#{1,6}\s*Video Tutorials\s*&\s*Inspiration\s*$/gim,
+      ""
+    );
+
+  cleaned =
+    cleaned.replace(
+      /^\s*#{1,6}\s*Related Videos\s*$/gim,
+      ""
+    );
+
+  // Remove empty repeated headings
+  cleaned =
+    cleaned.replace(
+      /^\s*#{1,6}\s*Video Tutorials.*$/gim,
+      ""
+    );
+
+  // Remove excessive blank lines
+  cleaned =
+    cleaned.replace(
+      /\n{3,}/g,
+      "\n\n"
+    );
+
+  return cleaned.trim();
+}
+
+article.content =
+  cleanArticleContent(
+    article.content,
+    article.title
+  );
+
+console.log(
+  "Article content cleaned."
+);
+
 console.log(
   `Article title: ${article.title}`
 );
 
 // ============================================================
-// YOUTUBE SEARCH
+// YOUTUBE KEYWORD NORMALIZATION
 // ============================================================
 
-const searchTerms = [
-  article.title,
-  ...(article.keywords || []).slice(0, 3)
-];
+function normalizeText(text) {
 
-const youtubeQuery =
-  searchTerms.join(" ");
+  return String(text || "")
+    .toLowerCase()
+    .replace(
+      /[^a-z0-9\s]/g,
+      " "
+    )
+    .replace(
+      /\s+/g,
+      " "
+    )
+    .trim();
+}
 
-console.log(
-  `Searching YouTube: ${youtubeQuery}`
-);
+function tokenize(text) {
 
-const youtubeUrl =
-  new URL(
-    "https://www.googleapis.com/youtube/v3/search"
-  );
+  return normalizeText(text)
+    .split(" ")
+    .filter(
+      (word) =>
+        word.length >= 3
+    );
+}
 
-youtubeUrl.searchParams.set(
-  "part",
-  "snippet"
-);
+// Common words that do not help determine
+// whether a YouTube video is relevant.
 
-youtubeUrl.searchParams.set(
-  "q",
-  youtubeQuery
-);
+const STOP_WORDS = new Set([
+  "the",
+  "and",
+  "for",
+  "with",
+  "from",
+  "your",
+  "you",
+  "this",
+  "that",
+  "2026",
+  "latest",
+  "best",
+  "ideas",
+  "trend",
+  "trends",
+  "guide",
+  "tutorial",
+  "inspiration",
+  "style",
+  "styles",
+  "beauty"
+]);
 
-youtubeUrl.searchParams.set(
-  "type",
-  "video"
-);
+function meaningfulTokens(text) {
 
-youtubeUrl.searchParams.set(
-  "maxResults",
-  "5"
-);
+  return tokenize(text)
+    .filter(
+      (word) =>
+        !STOP_WORDS.has(word)
+    );
+}
 
-youtubeUrl.searchParams.set(
-  "order",
-  "relevance"
-);
+// ============================================================
+// YOUTUBE RELEVANCE SCORE
+// ============================================================
 
-youtubeUrl.searchParams.set(
-  "safeSearch",
-  "strict"
-);
+function scoreYouTubeVideo(
+  video,
+  article
+) {
 
-youtubeUrl.searchParams.set(
-  "key",
-  youtubeKey
-);
-
-let videos = [];
-
-try {
-
-  const youtubeResponse =
-    await fetch(
-      youtubeUrl
+  const videoText =
+    normalizeText(
+      `${video.title} ${video.channel}`
     );
 
-  if (!youtubeResponse.ok) {
+  const articleText =
+    normalizeText(
+      `${article.title} ${article.category} ${(article.keywords || []).join(" ")}`
+    );
 
-    const error =
-      await youtubeResponse.text();
+  const articleTokens =
+    meaningfulTokens(
+      articleText
+    );
 
-    throw new Error(
-      `YouTube API error: ${youtubeResponse.status}\n${error}`
+  if (!articleTokens.length) {
+    return 0;
+  }
+
+  let score = 0;
+
+  // Exact phrase match
+  const articleTitle =
+    normalizeText(
+      article.title
+    );
+
+  if (
+    articleTitle.length > 8 &&
+    videoText.includes(articleTitle)
+  ) {
+    score += 12;
+  }
+
+  // Keyword matches
+  for (
+    const token of articleTokens
+  ) {
+
+    if (
+      videoText.includes(token)
+    ) {
+      score += 2;
+    }
+  }
+
+  // Category-specific strong signals
+  const category =
+    normalizeText(
+      article.category
+    );
+
+  const categoryWords =
+    meaningfulTokens(
+      category
+    );
+
+  for (
+    const word of categoryWords
+  ) {
+
+    if (
+      videoText.includes(word)
+    ) {
+      score += 4;
+    }
+  }
+
+  return score;
+}
+
+// ============================================================
+// YOUTUBE SEARCH QUERY BUILDER
+// ============================================================
+
+function buildYouTubeQueries(article) {
+
+  const queries = [];
+
+  const title =
+    String(article.title || "")
+      .trim();
+
+  const keywords =
+    Array.isArray(article.keywords)
+      ? article.keywords
+          .filter(Boolean)
+          .slice(0, 5)
+      : [];
+
+  const category =
+    String(
+      article.category || ""
+    ).trim();
+
+  // Most specific search
+  if (title) {
+    queries.push(
+      `"${title}"`
     );
   }
 
-  const youtubeData =
-    await youtubeResponse.json();
+  // Title without unnecessary words
+  if (keywords.length) {
+    queries.push(
+      `${keywords
+        .slice(0, 3)
+        .join(" ")} ${category}`
+    );
+  }
 
-  videos =
-    (youtubeData.items || [])
-      .filter(
-        (item) =>
-          item?.id?.videoId
-      )
-      .map((item) => ({
-        title:
-          item.snippet.title,
+  // Category + strongest keywords
+  if (keywords.length >= 2) {
+    queries.push(
+      `${category} ${keywords
+        .slice(0, 2)
+        .join(" ")} tutorial`
+    );
+  }
 
-        channel:
-          item.snippet.channelTitle,
+  // Remove duplicate queries
+  return [
+    ...new Set(
+      queries
+        .map(
+          (q) => q.trim()
+        )
+        .filter(Boolean)
+    )
+  ];
+}
 
-        videoId:
-          item.id.videoId,
+// ============================================================
+// YOUTUBE SEARCH
+// ============================================================
 
-        url:
-          `https://www.youtube.com/watch?v=${item.id.videoId}`,
+const youtubeQueries =
+  buildYouTubeQueries(
+    article
+  );
 
-        thumbnail:
-          item.snippet.thumbnails?.high?.url ||
-          item.snippet.thumbnails?.medium?.url ||
-          item.snippet.thumbnails?.default?.url ||
-          ""
-      }));
+console.log(
+  "\nYouTube search queries:"
+);
+
+youtubeQueries.forEach(
+  (query, index) => {
+    console.log(
+      `${index + 1}. ${query}`
+    );
+  }
+);
+
+let allVideos = [];
+
+try {
+
+  for (
+    const query of youtubeQueries
+  ) {
+
+    const youtubeUrl =
+      new URL(
+        "https://www.googleapis.com/youtube/v3/search"
+      );
+
+    youtubeUrl.searchParams.set(
+      "part",
+      "snippet"
+    );
+
+    youtubeUrl.searchParams.set(
+      "q",
+      query
+    );
+
+    youtubeUrl.searchParams.set(
+      "type",
+      "video"
+    );
+
+    youtubeUrl.searchParams.set(
+      "maxResults",
+      "10"
+    );
+
+    youtubeUrl.searchParams.set(
+      "order",
+      "relevance"
+    );
+
+    youtubeUrl.searchParams.set(
+      "safeSearch",
+      "strict"
+    );
+
+    youtubeUrl.searchParams.set(
+      "key",
+      youtubeKey
+    );
+
+    const youtubeResponse =
+      await fetch(
+        youtubeUrl
+      );
+
+    if (!youtubeResponse.ok) {
+
+      const error =
+        await youtubeResponse.text();
+
+      console.error(
+        `YouTube query failed: ${query}`
+      );
+
+      console.error(
+        error
+      );
+
+      continue;
+    }
+
+    const youtubeData =
+      await youtubeResponse.json();
+
+    const results =
+      (youtubeData.items || [])
+        .filter(
+          (item) =>
+            item?.id?.videoId
+        )
+        .map(
+          (item) => ({
+            title:
+              item.snippet.title,
+
+            channel:
+              item.snippet.channelTitle,
+
+            videoId:
+              item.id.videoId,
+
+            url:
+              `https://www.youtube.com/watch?v=${item.id.videoId}`,
+
+            thumbnail:
+              item.snippet.thumbnails?.high?.url ||
+              item.snippet.thumbnails?.medium?.url ||
+              item.snippet.thumbnails?.default?.url ||
+              ""
+          })
+        );
+
+    allVideos.push(
+      ...results
+    );
+  }
 
   console.log(
-    `YouTube videos found: ${videos.length}`
+    `Raw YouTube videos collected: ${allVideos.length}`
+  );
+
+  // ==========================================================
+  // REMOVE DUPLICATE VIDEO IDS
+  // ==========================================================
+
+  const uniqueVideos =
+    Array.from(
+      new Map(
+        allVideos.map(
+          (video) => [
+            video.videoId,
+            video
+          ]
+        )
+      ).values()
+    );
+
+  // ==========================================================
+  // SCORE VIDEOS
+  // ==========================================================
+
+  const scoredVideos =
+    uniqueVideos
+      .map(
+        (video) => ({
+          ...video,
+          relevanceScore:
+            scoreYouTubeVideo(
+              video,
+              article
+            )
+        })
+      )
+      .sort(
+        (a, b) =>
+          b.relevanceScore -
+          a.relevanceScore
+      );
+
+  console.log(
+    "\nYouTube relevance scores:"
+  );
+
+  scoredVideos
+    .slice(0, 10)
+    .forEach(
+      (video) => {
+
+        console.log(
+          `${video.relevanceScore} → ${video.title}`
+        );
+
+      }
+    );
+
+  // ==========================================================
+  // ONLY STRONGLY RELEVANT VIDEOS
+  // ==========================================================
+
+  const relevantVideos =
+    scoredVideos
+      .filter(
+        (video) =>
+          video.relevanceScore >= 6
+      );
+
+  // ==========================================================
+  // REMOVE SIMILAR VIDEO TITLES
+  // ==========================================================
+
+  const selectedVideos = [];
+
+  for (
+    const video of relevantVideos
+  ) {
+
+    const videoTokens =
+      new Set(
+        meaningfulTokens(
+          video.title
+        )
+      );
+
+    let tooSimilar = false;
+
+    for (
+      const selected of selectedVideos
+    ) {
+
+      const selectedTokens =
+        new Set(
+          meaningfulTokens(
+            selected.title
+          )
+        );
+
+      if (
+        videoTokens.size === 0 ||
+        selectedTokens.size === 0
+      ) {
+        continue;
+      }
+
+      let overlap = 0;
+
+      for (
+        const word of videoTokens
+      ) {
+
+        if (
+          selectedTokens.has(word)
+        ) {
+          overlap++;
+        }
+      }
+
+      const smallerSize =
+        Math.min(
+          videoTokens.size,
+          selectedTokens.size
+        );
+
+      const similarity =
+        overlap /
+        smallerSize;
+
+      if (
+        similarity >= 0.75
+      ) {
+
+        tooSimilar = true;
+        break;
+      }
+    }
+
+    if (!tooSimilar) {
+
+      selectedVideos.push(
+        video
+      );
+    }
+
+    if (
+      selectedVideos.length >=
+      MAX_YOUTUBE_VIDEOS
+    ) {
+      break;
+    }
+  }
+
+  videos =
+    selectedVideos.map(
+      ({
+        relevanceScore,
+        ...video
+      }) => video
+    );
+
+  console.log(
+    `\nStrongly relevant YouTube videos selected: ${videos.length}`
+  );
+
+  videos.forEach(
+    (video, index) => {
+
+      console.log(
+        `${index + 1}. ${video.title}`
+      );
+
+    }
   );
 
 } catch (error) {
@@ -656,10 +1157,6 @@ try {
   console.error(
     error.message
   );
-
-  // IMPORTANT:
-  // YouTube failure should not destroy
-  // the generated article.
 
   videos = [];
 
@@ -673,6 +1170,7 @@ try {
 // ============================================================
 
 const output = {
+
   generatedAt:
     new Date().toISOString(),
 
@@ -739,6 +1237,14 @@ console.log(
 
 console.log(
   `YouTube videos: ${videos.length}`
+);
+
+console.log(
+  "Duplicate headings cleaned."
+);
+
+console.log(
+  "YouTube relevance filtering enabled."
 );
 
 console.log(
