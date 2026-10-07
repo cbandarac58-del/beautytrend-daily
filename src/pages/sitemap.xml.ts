@@ -6,22 +6,74 @@ const siteUrl = 'https://beautytrend-daily.pages.dev';
 export const GET: APIRoute = async () => {
   const articles = await getCollection('articles');
 
-  const articleUrls = articles.map((article) => {
-    return `
+  const categories = [
+    'haircuts',
+    'hairstyles',
+    'hair-color',
+    'nail-styles',
+    'nail-art',
+    'beauty-trends',
+  ];
+
+  const staticUrls = [
+    `
   <url>
-    <loc>${siteUrl}/articles/${article.slug}</loc>
-    <lastmod>${article.data.updatedAt
-      ? article.data.updatedAt.toISOString()
-      : article.data.publishedAt.toISOString()}</lastmod>
+    <loc>${siteUrl}/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>`,
+    `
+  <url>
+    <loc>${siteUrl}/about/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>`,
+    `
+  <url>
+    <loc>${siteUrl}/privacy/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>`,
+    `
+  <url>
+    <loc>${siteUrl}/terms/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>`,
+    `
+  <url>
+    <loc>${siteUrl}/contact/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>`,
+  ];
+
+  const categoryUrls = categories.map((cat) => `
+  <url>
+    <loc>${siteUrl}/category/${cat}/</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>`).join('');
+
+  const articleUrls = articles
+    .map((article) => {
+      const slug = article.id.replace(/\.md$/, '');
+      const date = article.data.updatedAt || article.data.publishedAt;
+      return `
+  <url>
+    <loc>${siteUrl}/articles/${slug}/</loc>
+    <lastmod>${new Date(date).toISOString()}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>`;
-  }).join('');
+    })
+    .join('');
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>${siteUrl}/</loc>
-  </url>
-${articleUrls}
+  ${staticUrls.join('')}
+  ${categoryUrls}
+  ${articleUrls}
 </urlset>`;
 
   return new Response(sitemap.trim(), {
