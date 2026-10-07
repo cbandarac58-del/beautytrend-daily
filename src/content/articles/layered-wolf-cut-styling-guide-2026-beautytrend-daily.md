@@ -71,27 +71,3 @@ One of the wolf cut’s greatest strengths is its universal appeal. It's incredi
 ### Final Howls: Your Wolf Cut, Your Way
 
 As we navigate 2026, the layered wolf cut continues to prove itself as more than just a passing fad. It’s a versatile, empowering haircut that celebrates individuality and texture. It encourages you to embrace your natural hair while offering endless possibilities for creative expression. So, whether you’re new to the wolf pack or a seasoned enthusiast, this year is all about making the layered wolf cut uniquely yours. Dare to be effortlessly chic, wonderfully wild, and utterly unforgettable. The world is your styling playground.
-
-## Video Tutorials & Inspiration
-
-<div class="video-embed" style="position:relative;width:100%;aspect-ratio:16/9;margin:24px 0;overflow:hidden;border-radius:16px;">
-  <iframe
-    src="https://www.youtube.com/embed/mVH6a9_vD5Q"
-    title="How to Cut a Perfect Wolf Cut | 2026 Wolfcut Hair Tutorial | Easy DIY Trend (Step-by-Step)"
-    loading="lazy"
-    style="width:100%;height:100%;border:0;"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen>
-  </iframe>
-</div>
-
-<div class="video-embed" style="position:relative;width:100%;aspect-ratio:16/9;margin:24px 0;overflow:hidden;border-radius:16px;">
-  <iframe
-    src="https://www.youtube.com/embed/2cnCScwhorE"
-    title="How to style your wolf cut✨💘 ~ Wolf cut tutorial #wolfcut #howtostyle"
-    loading="lazy"
-    style="width:100%;height:100%;border:0;"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen>
-  </iframe>
-</div>
