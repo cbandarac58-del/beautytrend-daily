@@ -1,0 +1,293 @@
+---
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const articles = (await getCollection('articles')).sort((a, b) => {
+    return (
+      new Date(b.data.publishedAt).getTime() -
+      new Date(a.data.publishedAt).getTime()
+    );
+  });
+
+  const categories = [
+    { slug: 'haircuts', name: 'Haircuts', desc: 'Trending haircuts, bob styles, layers and chic cuts for 2026.' },
+    { slug: 'hairstyles', name: 'Hairstyles', desc: 'Effortless updos, buns, blowout styles and daily hairstyle guides.' },
+    { slug: 'hair-color', name: 'Hair Color', desc: 'Balayage, brunettes, warm coppers and radiant hair color trends.' },
+    { slug: 'nail-styles', name: 'Nail Styles', desc: 'Gel extensions, milky soap nails, clean manicures and nail shapes.' },
+    { slug: 'nail-art', name: 'Nail Art', desc: 'Chrome nails, cat-eye velvet, 3D floral art and micro French tips.' },
+    { slug: 'beauty-trends', name: 'Beauty Trends', desc: 'Glass skin routines, natural latte makeup and clean girl aesthetic.' },
+  ];
+
+  return categories.map((cat) => {
+    const filtered = articles.filter((art) => {
+      const artCat = (art.data.category || '').toLowerCase().replace(/\s+/g, '-');
+      const catSlug = cat.slug.toLowerCase();
+      return artCat.includes(catSlug) || catSlug.includes(artCat);
+    });
+
+    return {
+      params: { category: cat.slug },
+      props: {
+        categoryInfo: cat,
+        articles: filtered,
+      },
+    };
+  });
+}
+
+const { categoryInfo, articles } = Astro.props;
+const siteUrl = 'https://beautytrend-daily.pages.dev';
+const canonicalUrl = `${siteUrl}/category/${categoryInfo.slug}/`;
+
+const DEFAULT_IMAGES: Record<string, string> = {
+  haircuts: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80',
+  hairstyles: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=800&q=80',
+  'hair-color': 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=800&q=80',
+  'nail-styles': 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80',
+  'nail-art': 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80',
+  'beauty-trends': 'https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=800&q=80',
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#faf8f7" />
+    <title>{categoryInfo.name} Trends 2026 | BeautyTrend Daily</title>
+    <meta name="description" content={categoryInfo.desc} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <style>
+      :global(*) { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: #faf8f7;
+        color: #202020;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      .container { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+      .header {
+        background: #ffffff;
+        border-bottom: 1px solid #eeeeee;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+      }
+      .logo {
+        font-size: 22px;
+        font-weight: 800;
+        color: #111;
+        text-decoration: none;
+        letter-spacing: -0.5px;
+      }
+      .logo span { color: #d65d7a; }
+      .nav-links a {
+        color: #555;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        margin-left: 18px;
+        transition: color 0.2s;
+      }
+      .nav-links a:hover, .nav-links a.active { color: #d65d7a; }
+
+      .hero {
+        padding: 50px 0 35px;
+        text-align: center;
+      }
+      .eyebrow {
+        text-transform: uppercase;
+        font-size: 12px;
+        font-weight: 800;
+        color: #d65d7a;
+        letter-spacing: 1.5px;
+        margin-bottom: 8px;
+      }
+      h1 {
+        font-size: clamp(32px, 5vw, 44px);
+        margin: 0 0 12px;
+        color: #111;
+        letter-spacing: -1px;
+      }
+      .subtitle {
+        color: #666;
+        font-size: 17px;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
+
+      .article-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+        padding: 30px 0 70px;
+      }
+      .article-card {
+        background: #ffffff;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid #ece7e4;
+        transition: transform 0.25s, box-shadow 0.25s;
+        display: flex;
+        flex-direction: column;
+      }
+      .article-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 28px rgba(0,0,0,0.06);
+      }
+      .card-image-wrap {
+        width: 100%;
+        height: 220px;
+        overflow: hidden;
+        background: #f0eae6;
+      }
+      .card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.35s;
+      }
+      .article-card:hover .card-image {
+        transform: scale(1.04);
+      }
+      .card-body {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+      }
+      .card-category {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #d65d7a;
+        margin-bottom: 8px;
+      }
+      .card-title {
+        font-size: 20px;
+        line-height: 1.35;
+        margin: 0 0 10px;
+        color: #111;
+      }
+      .card-excerpt {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #666;
+        margin: 0 0 16px;
+        flex-grow: 1;
+      }
+      .read-link {
+        font-size: 14px;
+        font-weight: 700;
+        color: #111;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .read-link:hover { color: #d65d7a; }
+
+      .empty-box {
+        text-align: center;
+        padding: 60px 20px;
+        background: #fff;
+        border-radius: 16px;
+        border: 1px dashed #ddd;
+        margin: 30px 0;
+      }
+
+      .footer {
+        background: #ffffff;
+        border-top: 1px solid #eeeeee;
+        padding: 35px 0;
+        text-align: center;
+        color: #777;
+        font-size: 14px;
+      }
+      .footer-links {
+        margin-bottom: 12px;
+      }
+      .footer-links a {
+        color: #555;
+        text-decoration: none;
+        margin: 0 10px;
+        font-size: 13px;
+      }
+      .footer-links a:hover { color: #111; }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="container nav">
+        <a href="/" class="logo">BeautyTrend<span>Daily</span></a>
+        <nav class="nav-links">
+          <a href="/category/haircuts/">Haircuts</a>
+          <a href="/category/hairstyles/">Hairstyles</a>
+          <a href="/category/hair-color/">Hair Color</a>
+          <a href="/category/nail-styles/">Nail Styles</a>
+          <a href="/category/nail-art/">Nail Art</a>
+          <a href="/category/beauty-trends/">Beauty Trends</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <p class="eyebrow">Category Overview</p>
+        <h1>{categoryInfo.name}</h1>
+        <p class="subtitle">{categoryInfo.desc}</p>
+      </section>
+
+      {articles.length === 0 ? (
+        <div class="empty-box">
+          <h3>Articles in {categoryInfo.name} coming soon!</h3>
+          <p>Our automated beauty editorial publishes new guides daily.</p>
+          <a href="/" class="read-link" style="margin-top: 15px;">← Back to All Articles</a>
+        </div>
+      ) : (
+        <div class="article-grid">
+          {articles.map((art) => {
+            const slug = art.id.replace(/\.md$/, '');
+            const imgUrl = art.data.heroImage || DEFAULT_IMAGES[categoryInfo.slug] || DEFAULT_IMAGES.haircuts;
+            return (
+              <article class="article-card">
+                <a href={`/articles/${slug}/`} style="text-decoration: none; color: inherit; display: flex; flex-direction: column; height: 100%;">
+                  <div class="card-image-wrap">
+                    <img src={imgUrl} alt={art.data.title} class="card-image" loading="lazy" />
+                  </div>
+                  <div class="card-body">
+                    <div class="card-category">{art.data.category}</div>
+                    <h2 class="card-title">{art.data.title}</h2>
+                    <p class="card-excerpt">{art.data.excerpt || art.data.description}</p>
+                    <span class="read-link">Read Full Guide →</span>
+                  </div>
+                </a>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-links">
+          <a href="/about/">About</a>
+          <a href="/privacy/">Privacy Policy</a>
+          <a href="/terms/">Terms</a>
+          <a href="/contact/">Contact</a>
+        </div>
+        <div>© {new Date().getFullYear()} BeautyTrend Daily. All rights reserved.</div>
+      </div>
+    </footer>
+  </body>
+</html>
