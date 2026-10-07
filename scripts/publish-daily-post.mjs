@@ -9,982 +9,467 @@ if (!geminiKey) {
 }
 
 const ARTICLES_DIR = "src/content/articles";
-
-fs.mkdirSync(ARTICLES_DIR, {
-  recursive: true
-});
+fs.mkdirSync(ARTICLES_DIR, { recursive: true });
 
 // ============================================================
-// 1. TOPIC POOL
+// 1. EXTENSIVE & DIVERSE BEAUTY TOPIC POOL (2026 Trends)
 // ============================================================
+const TOPIC_REGISTRY = [
+  // Haircuts
+  {
+    topic: "Korean Butterfly Layered Haircut Trends 2026",
+    category: "Haircuts",
+    searchKey: "Butterfly haircut tutorial"
+  },
+  {
+    topic: "French Bob with Airy Curtain Bangs 2026",
+    category: "Haircuts",
+    searchKey: "French bob haircut tutorial"
+  },
+  {
+    topic: "Modern Shag Haircut for Naturally Curly Hair 2026",
+    category: "Haircuts",
+    searchKey: "Curly shag haircut tutorial"
+  },
+  {
+    topic: "Italian Bob Haircut: The Chic Styling Guide 2026",
+    category: "Haircuts",
+    searchKey: "Italian bob styling tutorial"
+  },
+  {
+    topic: "Bixie & Soft Pixie Cut Transformations 2026",
+    category: "Haircuts",
+    searchKey: "Pixie bixie haircut tutorial"
+  },
+  {
+    topic: "90s Supermodel Blowout Layers Haircut 2026",
+    category: "Haircuts",
+    searchKey: "90s blowout layers haircut"
+  },
+  {
+    topic: "Face-Framing Wispy Bangs & Midi Haircuts 2026",
+    category: "Haircuts",
+    searchKey: "Wispy curtain bangs tutorial"
+  },
 
-const TOPICS = [
-  "Korean Butterfly Haircut Trends 2026",
-  "French Bob with Curtain Bangs 2026",
-  "Modern Shag Haircut for Naturally Curly Hair 2026",
-  "Sleek Glass Hair and High Gloss Treatments 2026",
-  "Layered Wolf Cut Styling Guide 2026",
-  "Cat Eye Velvet Magnetic Gel Nail Trends 2026",
-  "Micro French Tip Elegant Manicure Designs 2026",
-  "Glazed Donut Chrome Nails Style Guide 2026",
-  "Minimalist 3D Floral Nail Art Trends 2026",
-  "Espresso Brunette & Cherry Cola Hair Colors 2026",
-  "Honey Vanilla Blonde Balayage 2026",
-  "Mushroom Brown Soft Dimension Hair Color 2026",
-  "Glass Skin Korean Skincare Routine 2026",
-  "Natural Latte Makeup & Clean Girl Aesthetic 2026"
+  // Hairstyles
+  {
+    topic: "Sleek Glass Hair and High-Gloss Styling Guide 2026",
+    category: "Hairstyles",
+    searchKey: "Glass hair tutorial sleek"
+  },
+  {
+    topic: "Effortless French Girl Messy Bun Tutorials 2026",
+    category: "Hairstyles",
+    searchKey: "French messy bun tutorial"
+  },
+  {
+    topic: "Heatless Silk Ribbon Waves & Overnight Styling 2026",
+    category: "Hairstyles",
+    searchKey: "Heatless curls tutorial"
+  },
+  {
+    topic: "Clean Girl Slicked-Back Bun Styling Routine 2026",
+    category: "Hairstyles",
+    searchKey: "Slick back bun tutorial"
+  },
+  {
+    topic: "Boho Romantic Braids & Half-Up Hair Trends 2026",
+    category: "Hairstyles",
+    searchKey: "Boho braids half up tutorial"
+  },
+
+  // Hair Colors
+  {
+    topic: "Espresso Brunette & Cherry Cola Hair Colors 2026",
+    category: "Hair Color",
+    searchKey: "Cherry cola hair color brunette"
+  },
+  {
+    topic: "Honey Vanilla & Buttercream Blonde Balayage 2026",
+    category: "Hair Color",
+    searchKey: "Honey blonde balayage hair"
+  },
+  {
+    topic: "Mushroom Brown Soft Dimension Hair Color 2026",
+    category: "Hair Color",
+    searchKey: "Mushroom brown hair tutorial"
+  },
+  {
+    topic: "Warm Copper & Peach Fuzz Hair Color Trends 2026",
+    category: "Hair Color",
+    searchKey: "Copper hair color tutorial"
+  },
+
+  // Nail Art & Manicures
+  {
+    topic: "Cat Eye Velvet Magnetic Gel Nail Trends 2026",
+    category: "Nail Art",
+    searchKey: "Cat eye velvet nails tutorial"
+  },
+  {
+    topic: "Micro French Tip Elegant Manicure Designs 2026",
+    category: "Nail Art",
+    searchKey: "Micro french manicure tutorial"
+  },
+  {
+    topic: "Glazed Donut Chrome Nails Style Guide 2026",
+    category: "Nail Art",
+    searchKey: "Chrome glazed nails tutorial"
+  },
+  {
+    topic: "Minimalist 3D Floral & Aura Nail Art 2026",
+    category: "Nail Art",
+    searchKey: "3D nail art floral tutorial"
+  },
+  {
+    topic: "Gel-X Nail Extensions Care & Trendy Shapes 2026",
+    category: "Nail Styles",
+    searchKey: "Gel X nails application tutorial"
+  },
+  {
+    topic: "Milky Soap Nails: The Clean Minimalist Look 2026",
+    category: "Nail Styles",
+    searchKey: "Milky soap nails tutorial"
+  },
+
+  // Beauty & Skincare Trends
+  {
+    topic: "Glass Skin Barrier Repair Skincare Routine 2026",
+    category: "Beauty Trends",
+    searchKey: "Korean glass skin routine tutorial"
+  },
+  {
+    topic: "Natural Latte Makeup & Monochromatic Glam 2026",
+    category: "Beauty Trends",
+    searchKey: "Latte makeup tutorial"
+  },
+  {
+    topic: "Fluffy Feathered Brows & Clean Beauty Guide 2026",
+    category: "Beauty Trends",
+    searchKey: "Fluffy laminated brows tutorial"
+  }
 ];
-
-function slugify(text) {
-  return String(text || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 function selectUniqueTopic() {
-  const existingFiles = fs
-    .readdirSync(ARTICLES_DIR)
-    .map((file) => file.toLowerCase());
-
-  const available = TOPICS.filter((topic) => {
-    const slug = slugify(topic);
-
-    return !existingFiles.some((file) =>
-      file.includes(slug)
-    );
+  const existingFiles = fs.readdirSync(ARTICLES_DIR).map((f) => f.toLowerCase());
+  const available = TOPIC_REGISTRY.filter((item) => {
+    const slug = item.topic
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    return !existingFiles.some((f) => f.includes(slug));
   });
 
-  const pool =
-    available.length > 0
-      ? available
-      : TOPICS;
-
-  return pool[
-    Math.floor(Math.random() * pool.length)
-  ];
+  const pool = available.length > 0 ? available : TOPIC_REGISTRY;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 // ============================================================
-// 2. GEMINI CONFIG
+// 2. GEMINI API CLIENT (Retries & Fail-safes)
 // ============================================================
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 4000;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const GEMINI_MODELS = [
-  "gemini-2.5-flash",
-  "gemini-2.5-flash-lite"
-];
+async function callGemini({ model, prompt, useSearch = false }) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }]
+  };
 
-const MAX_ATTEMPTS = 3;
-const RETRY_DELAY = 4000;
+  if (useSearch) {
+    body.tools = [{ google_search: {} }];
+  }
 
-function sleep(ms) {
-  return new Promise((resolve) =>
-    setTimeout(resolve, ms)
-  );
-}
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": geminiKey
+    },
+    body: JSON.stringify(body)
+  });
 
-// ============================================================
-// 3. GEMINI API
-// ============================================================
-
-async function callGemini(
-  prompt,
-  model = "gemini-2.5-flash"
-) {
-  const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-
-  const controller =
-    new AbortController();
-
-  const timeout = setTimeout(
-    () => controller.abort(),
-    120000
-  );
-
-  try {
-    const response = await fetch(
-      url,
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json",
-          "x-goog-api-key":
-            geminiKey
-        },
-
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt
-                }
-              ]
-            }
-          ],
-
-          tools: [
-            {
-              google_search: {}
-            }
-          ]
-        }),
-
-        signal: controller.signal
-      }
-    );
-
-    const text =
-      await response.text();
-
-    if (!response.ok) {
-      let message = text;
-
-      try {
-        const data =
-          JSON.parse(text);
-
-        message =
-          data?.error?.message ||
-          text;
-      } catch {}
-
-      const error =
-        new Error(
-          `Gemini API ${response.status}: ${message}`
-        );
-
-      error.status =
-        response.status;
-
-      throw error;
-    }
-
-    let data;
-
+  const text = await response.text();
+  if (!response.ok) {
+    let msg = text;
     try {
-      data =
-        JSON.parse(text);
-    } catch {
-      throw new Error(
-        "Gemini returned invalid HTTP JSON"
-      );
-    }
-
-    const output =
-      data?.candidates?.[0]
-        ?.content?.parts
-        ?.map(
-          (part) =>
-            part.text || ""
-        )
-        .join("")
-        .trim();
-
-    if (!output) {
-      throw new Error(
-        "Gemini returned an empty response"
-      );
-    }
-
-    return output;
-
-  } catch (error) {
-
-    if (
-      error?.name ===
-      "AbortError"
-    ) {
-      const timeoutError =
-        new Error(
-          "Gemini request timed out after 120 seconds"
-        );
-
-      timeoutError.status =
-        408;
-
-      throw timeoutError;
-    }
-
-    throw error;
-
-  } finally {
-    clearTimeout(timeout);
+      const json = JSON.parse(text);
+      msg = json?.error?.message || text;
+    } catch {}
+    const err = new Error(`Gemini API error (${response.status}): ${msg}`);
+    err.status = response.status;
+    throw err;
   }
+
+  const data = JSON.parse(text);
+  const output = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("").trim();
+  if (!output) throw new Error("Empty response from Gemini");
+  return output;
 }
 
-// ============================================================
-// 4. GEMINI SAFE RETRY
-// ============================================================
-
-async function callGeminiSafe(prompt) {
+async function callGeminiSafe({ prompt, useSearch = false }) {
   let lastError = null;
-
-  for (
-    const model of GEMINI_MODELS
-  ) {
-
-    for (
-      let attempt = 1;
-      attempt <= MAX_ATTEMPTS;
-      attempt++
-    ) {
-
+  for (const model of GEMINI_MODELS) {
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-
-        console.log(
-          `Gemini ${model} - attempt ${attempt}/${MAX_ATTEMPTS}`
-        );
-
-        const result =
-          await callGemini(
-            prompt,
-            model
-          );
-
-        console.log(
-          `Gemini response received from ${model}`
-        );
-
-        return result;
-
-      } catch (error) {
-
-        lastError =
-          error;
-
-        console.log(
-          `Gemini error: ${error.message}`
-        );
-
-        const retryable =
-          error?.status === 408 ||
-          error?.status === 429 ||
-          error?.status === 500 ||
-          error?.status === 502 ||
-          error?.status === 503 ||
-          error?.status === 504 ||
-          error?.name ===
-            "AbortError" ||
-          String(
-            error?.message || ""
-          )
-            .toLowerCase()
-            .includes("fetch failed");
-
-        if (
-          retryable &&
-          attempt < MAX_ATTEMPTS
-        ) {
-
-          console.log(
-            `Waiting ${RETRY_DELAY / 1000}s before retry...`
-          );
-
-          await sleep(
-            RETRY_DELAY
-          );
-
-        } else if (
-          !retryable
-        ) {
-          break;
-        }
+        console.log(`[Gemini] Model ${model} - Attempt ${attempt}/${MAX_RETRIES}`);
+        return await callGemini({ model, prompt, useSearch });
+      } catch (err) {
+        lastError = err;
+        console.warn(`[Gemini] Attempt failed: ${err.message}`);
+        if (attempt < MAX_RETRIES) await sleep(RETRY_DELAY_MS);
       }
     }
-
-    console.log(
-      `Trying next Gemini model...`
-    );
   }
-
-  throw new Error(
-    `All Gemini attempts failed. Last error: ${lastError?.message}`
-  );
+  throw new Error(`All Gemini models failed. Last error: ${lastError?.message}`);
 }
-
-// ============================================================
-// 5. JSON CLEANER
-// ============================================================
 
 function cleanJson(text) {
-
-  let value =
-    String(text || "")
-      .trim();
-
-  value =
-    value
-      .replace(
-        /^```json\s*/i,
-        ""
-      )
-      .replace(
-        /^```\s*/i,
-        ""
-      )
-      .replace(
-        /\s*```$/i,
-        ""
-      )
-      .trim();
-
-  const firstBrace =
-    value.indexOf("{");
-
-  const lastBrace =
-    value.lastIndexOf("}");
-
-  if (
-    firstBrace !== -1 &&
-    lastBrace !== -1 &&
-    lastBrace > firstBrace
-  ) {
-
-    value =
-      value.slice(
-        firstBrace,
-        lastBrace + 1
-      );
+  let val = String(text || "").trim();
+  val = val.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+  const firstBrace = val.indexOf("{");
+  const lastBrace = val.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    val = val.slice(firstBrace, lastBrace + 1);
   }
-
-  return value.trim();
+  return val.trim();
 }
 
 // ============================================================
-// 6. PARSE GEMINI JSON
+// 3. CURATED 100% ROYALTY-FREE BEAUTY IMAGES
 // ============================================================
+const CATEGORY_IMAGES = {
+  Haircuts: [
+    {
+      url: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80",
+      credit: "Photo by Guilherme Petri on Unsplash"
+    },
+    {
+      url: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80",
+      credit: "Photo by Valerie Elash on Unsplash"
+    },
+    {
+      url: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=1200&q=80",
+      credit: "Photo by Ali Pazani on Unsplash"
+    }
+  ],
+  Hairstyles: [
+    {
+      url: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&q=80",
+      credit: "Photo by Sarah Comeau on Unsplash"
+    },
+    {
+      url: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&q=80",
+      credit: "Photo by Tamara Bellis on Unsplash"
+    }
+  ],
+  "Hair Color": [
+    {
+      url: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=1200&q=80",
+      credit: "Photo by Valerie Elash on Unsplash"
+    },
+    {
+      url: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&w=1200&q=80",
+      credit: "Photo by Aw Creative on Unsplash"
+    }
+  ],
+  "Nail Art": [
+    {
+      url: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1200&q=80",
+      credit: "Photo by Giorgio Trovato on Unsplash"
+    },
+    {
+      url: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&q=80",
+      credit: "Photo by Element5 Digital on Unsplash"
+    }
+  ],
+  "Nail Styles": [
+    {
+      url: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&q=80",
+      credit: "Photo on Unsplash (Free Commercial Use)"
+    }
+  ],
+  "Beauty Trends": [
+    {
+      url: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&q=80",
+      credit: "Photo by Raphael Lovaski on Unsplash"
+    }
+  ]
+};
 
-function parseArticleJson(raw) {
-
-  const cleaned =
-    cleanJson(raw);
-
-  try {
-
-    return JSON.parse(
-      cleaned
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Gemini returned invalid article JSON."
-    );
-
-    console.error(
-      cleaned.slice(0, 5000)
-    );
-
-    throw new Error(
-      `Invalid article JSON: ${error.message}`
-    );
-  }
+function getCategoryPhoto(category) {
+  const list = CATEGORY_IMAGES[category] || CATEGORY_IMAGES.Haircuts;
+  return list[Math.floor(Math.random() * list.length)];
 }
 
 // ============================================================
-// 7. YOUTUBE
+// 4. PRECISE YOUTUBE TUTORIAL SEARCH (High Quality Videos)
 // ============================================================
-
-async function fetchYouTubeVideos(
-  query
-) {
-
+async function fetchPreciseYouTubeTutorials(searchKey) {
   if (!youtubeKey) {
-    console.log(
-      "YouTube API key not configured. Continuing without videos."
-    );
-
+    console.log("[YouTube] No YOUTUBE_API_KEY found. Skipping video search.");
     return [];
   }
 
   try {
+    const query = `${searchKey} step by step`;
+    const url = new URL("https://www.googleapis.com/youtube/v3/search");
+    url.searchParams.set("part", "snippet");
+    url.searchParams.set("q", query);
+    url.searchParams.set("type", "video");
+    url.searchParams.set("maxResults", "2");
+    url.searchParams.set("order", "relevance");
+    url.searchParams.set("videoEmbeddable", "true");
+    url.searchParams.set("safeSearch", "strict");
+    url.searchParams.set("key", youtubeKey);
 
-    const url =
-      new URL(
-        "https://www.googleapis.com/youtube/v3/search"
-      );
-
-    url.searchParams.set(
-      "part",
-      "snippet"
-    );
-
-    url.searchParams.set(
-      "maxResults",
-      "2"
-    );
-
-    url.searchParams.set(
-      "q",
-      `${query} tutorial 2026`
-    );
-
-    url.searchParams.set(
-      "type",
-      "video"
-    );
-
-    url.searchParams.set(
-      "safeSearch",
-      "strict"
-    );
-
-    url.searchParams.set(
-      "key",
-      youtubeKey
-    );
-
-    const controller =
-      new AbortController();
-
-    const timeout =
-      setTimeout(
-        () => controller.abort(),
-        30000
-      );
-
-    let response;
-
-    try {
-
-      response =
-        await fetch(
-          url,
-          {
-            signal:
-              controller.signal
-          }
-        );
-
-    } finally {
-
-      clearTimeout(
-        timeout
-      );
-    }
-
-    const text =
-      await response.text();
-
-    if (!response.ok) {
-      throw new Error(
-        `YouTube API ${response.status}: ${text}`
-      );
-    }
-
-    const data =
-      JSON.parse(text);
-
-    if (
-      !Array.isArray(
-        data?.items
-      )
-    ) {
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.warn(`[YouTube] Status ${res.status}. Continuing without videos.`);
       return [];
     }
 
-    return data.items
-      .filter(
-        (item) =>
-          item?.id?.videoId
-      )
+    const data = await res.json();
+    return (data.items || [])
+      .filter((item) => item?.id?.videoId)
       .map((item) => ({
-        title:
-          item?.snippet
-            ?.title ||
-          "Beauty Tutorial",
-
-        videoId:
-          item.id.videoId
+        title: item.snippet.title.replace(/&#39;/g, "'").replace(/&quot;/g, '"'),
+        videoId: item.id.videoId
       }));
-
-  } catch (error) {
-
-    console.warn(
-      "YouTube API warning:",
-      error.message
-    );
-
+  } catch (err) {
+    console.warn(`[YouTube] Error: ${err.message}`);
     return [];
   }
 }
 
 // ============================================================
-// 8. ARTICLE VALIDATION
+// 5. MASTER POST GENERATION FLOW
 // ============================================================
+async function generateSingleArticle() {
+  const topicItem = selectUniqueTopic();
+  console.log(`\n========================================`);
+  console.log(`🚀 Topic: ${topicItem.topic}`);
+  console.log(`📂 Category: ${topicItem.category}`);
+  console.log(`========================================`);
 
-function validateArticle(article) {
+  // Step 1: Web Research with Gemini Search Grounding
+  const researchPrompt = `
+You are a top international beauty trend analyst.
+Conduct fresh, verified research on the beauty trend: "${topicItem.topic}".
+Today's year is 2026.
 
-  if (
-    !article ||
-    typeof article !== "object"
-  ) {
-    throw new Error(
-      "Gemini article response is not an object"
-    );
-  }
+Focus on:
+- 2026 aesthetic characteristics and why it is trending
+- Step-by-step styling/application techniques and salon advice
+- Face shapes, hair/skin types it flatters best
+- Maintenance routine and essential product categories
 
-  const required =
-    [
-      "title",
-      "slug",
-      "description",
-      "content"
-    ];
-
-  for (
-    const field of required
-  ) {
-
-    if (
-      !article[field] ||
-      typeof article[field] !==
-        "string"
-    ) {
-      throw new Error(
-        `Article field missing: ${field}`
-      );
-    }
-  }
-
-  if (
-    !Array.isArray(
-      article.keywords
-    )
-  ) {
-    article.keywords = [];
-  }
-
-  if (
-    !Array.isArray(
-      article.faq
-    )
-  ) {
-    article.faq = [];
-  }
-
-  return article;
+Return ONLY valid JSON (no markdown fences):
+{
+  "summary": "3-sentence editorial summary",
+  "keyTakeaways": ["Point 1", "Point 2", "Point 3", "Point 4"]
 }
+`;
 
-// ============================================================
-// 9. MAIN PIPELINE
-// ============================================================
+  const researchText = await callGeminiSafe({ prompt: researchPrompt, useSearch: true });
+  const research = JSON.parse(cleanJson(researchText));
 
-async function run() {
-
-  const topic =
-    selectUniqueTopic();
-
-  console.log(
-    "================================="
-  );
-
-  console.log(
-    "DAILY BEAUTY ARTICLE"
-  );
-
-  console.log(
-    "================================="
-  );
-
-  console.log(
-    `Generating article for: "${topic}"`
-  );
-
-  // ----------------------------------------------------------
-  // GEMINI PROMPT
-  // ----------------------------------------------------------
-
-  const prompt = `
-You are a senior beauty editor for
-"BeautyTrend Daily".
-
-Write a comprehensive,
-original beauty editorial about:
-
-"${topic}"
-
+  // Step 2: Write Full Article Content
+  const articlePrompt = `
+You are the Editor-in-Chief of "BeautyTrend Daily".
+Write a comprehensive, captivating, human-written editorial article about: "${topicItem.topic}".
 Current year: 2026.
 
-The article should be useful for an
-international audience.
+Research context:
+${research.summary}
+Key Takeaways: ${research.keyTakeaways.join("; ")}
 
-Requirements:
+CRITICAL FORMATTING RULES:
+1. Do NOT repeat the article title or H1 anywhere in the content field.
+2. Start the content field directly with an engaging opening paragraph.
+3. Structure with rich headings (##, ###), styling steps, maintenance guides, and suitability advice.
+4. Do NOT insert any YouTube embed code, iframe tags, or video headers in the content field (our Astro engine handles videos separately).
+5. Provide 4 helpful, high-value FAQ entries.
 
-- Around 1200 words
-- Natural human editorial style
-- Original wording
-- Strong SEO
-- Helpful information
-- Mobile-friendly structure
-- No keyword stuffing
-- No invented statistics
-- No invented quotes
-- No AI references
-- No source copying
-
-Include:
-
-- Introduction
-- Main trend discussion
-- Styling ideas
-- Practical tips
-- Maintenance
-- Who the style suits
-- Final thoughts
-- 4 FAQs
-
-Return ONLY valid JSON.
-
-IMPORTANT:
-
-Do NOT use markdown code fences.
-
-Do NOT write anything before the JSON.
-
-Do NOT write anything after the JSON.
-
-The content field MUST contain Markdown.
-
-Escape quotation marks correctly
-inside JSON strings.
-
-Required structure:
-
+Return ONLY a valid JSON object matching this structure:
 {
-  "title": "SEO title",
-  "slug": "seo-friendly-slug",
-  "description": "Meta description under 160 characters",
-  "excerpt": "Short article preview",
-  "category": "Haircuts",
-  "keywords": [
-    "keyword 1",
-    "keyword 2",
-    "keyword 3",
-    "keyword 4",
-    "keyword 5"
-  ],
-  "content": "Markdown article",
+  "title": "Compelling High-CTR SEO Headline for 2026",
+  "slug": "url-friendly-slug-2026",
+  "description": "Engaging meta description under 160 characters",
+  "excerpt": "Short 2-sentence teaser for article previews",
+  "keywords": ["keyword 1", "keyword 2", "keyword 3", "keyword 4", "keyword 5"],
+  "content": "Full markdown content with ## headings starting directly with the intro paragraph...",
   "faq": [
-    {
-      "question": "Question?",
-      "answer": "Answer."
-    },
-    {
-      "question": "Question?",
-      "answer": "Answer."
-    },
-    {
-      "question": "Question?",
-      "answer": "Answer."
-    },
-    {
-      "question": "Question?",
-      "answer": "Answer."
-    }
+    { "question": "Question 1?", "answer": "Detailed answer 1." },
+    { "question": "Question 2?", "answer": "Detailed answer 2." },
+    { "question": "Question 3?", "answer": "Detailed answer 3." },
+    { "question": "Question 4?", "answer": "Detailed answer 4." }
   ]
 }
 `;
 
-  // ----------------------------------------------------------
-  // GENERATE ARTICLE
-  // ----------------------------------------------------------
+  const articleText = await callGeminiSafe({ prompt: articlePrompt, useSearch: false });
+  const article = JSON.parse(cleanJson(articleText));
 
-  let article;
+  // Step 3: Fetch verified YouTube tutorials using searchKey
+  const videos = await fetchPreciseYouTubeTutorials(topicItem.searchKey);
+  const image = getCategoryPhoto(topicItem.category);
+  const now = new Date().toISOString().split("T")[0];
 
-  let lastArticleError;
+  const slug = (article.slug || topicItem.topic.toLowerCase().replace(/[^a-z0-9]+/g, "-")).replace(/^-|-$/g, "");
+  const filePath = path.join(ARTICLES_DIR, `${slug}.md`);
 
-  for (
-    let attempt = 1;
-    attempt <= 2;
-    attempt++
-  ) {
+  // Ensure content doesn't start with duplicate H1
+  let cleanContent = article.content.trim();
+  cleanContent = cleanContent.replace(/^#\s+[^\n]+\n+/, "").trim();
 
-    try {
-
-      console.log(
-        `Article generation attempt ${attempt}/2`
-      );
-
-      const rawJson =
-        await callGeminiSafe(
-          prompt
-        );
-
-      article =
-        parseArticleJson(
-          rawJson
-        );
-
-      article =
-        validateArticle(
-          article
-        );
-
-      break;
-
-    } catch (error) {
-
-      lastArticleError =
-        error;
-
-      console.error(
-        `Article generation failed: ${error.message}`
-      );
-
-      if (
-        attempt < 2
-      ) {
-
-        console.log(
-          "Retrying article generation..."
-        );
-
-        await sleep(3000);
-      }
-    }
-  }
-
-  if (!article) {
-
-    throw new Error(
-      `Article generation failed after retries: ${lastArticleError?.message}`
-    );
-  }
-
-  console.log(
-    `Article title: ${article.title}`
-  );
-
-  // ----------------------------------------------------------
-  // YOUTUBE
-  // ----------------------------------------------------------
-
-  const videos =
-    await fetchYouTubeVideos(
-      article.title
-    );
-
-  console.log(
-    `YouTube videos found: ${videos.length}`
-  );
-
-  // ----------------------------------------------------------
-  // DATE
-  // ----------------------------------------------------------
-
-  const now =
-    new Date()
-      .toISOString()
-      .split("T")[0];
-
-  // ----------------------------------------------------------
-  // FRONTMATTER
-  // ----------------------------------------------------------
-
-  const keywords =
-    Array.isArray(
-      article.keywords
-    )
-      ? article.keywords
-      : [];
-
-  const faq =
-    Array.isArray(
-      article.faq
-    )
-      ? article.faq
-      : [];
-
+  // Strict Astro Content Collection Schema Frontmatter
   const frontmatter = `---
 title: ${JSON.stringify(article.title)}
 description: ${JSON.stringify(article.description)}
 excerpt: ${JSON.stringify(article.excerpt || article.description)}
-category: ${JSON.stringify(article.category || "Beauty")}
+category: ${JSON.stringify(topicItem.category)}
 keywords:
-${
-  keywords.length > 0
-    ? keywords
-        .map(
-          (keyword) =>
-            `  - ${JSON.stringify(keyword)}`
-        )
-        .join("\n")
-    : "  []"
-}
+${(article.keywords || []).map((k) => `  - ${JSON.stringify(k)}`).join("\n")}
 publishedAt: "${now}"
 updatedAt: "${now}"
+heroImage: ${JSON.stringify(image.url)}
+imageCredit: ${JSON.stringify(image.credit)}
 youtube:
-${
-  videos.length > 0
-    ? videos
-        .map(
-          (video) =>
-            `  - title: ${JSON.stringify(video.title)}
-    videoId: ${JSON.stringify(video.videoId)}`
-        )
-        .join("\n")
-    : "  []"
-}
+${videos.length > 0 ? videos.map((v) => `  - title: ${JSON.stringify(v.title)}\n    videoId: ${JSON.stringify(v.videoId)}`).join("\n") : "  []"}
 faq:
-${
-  faq.length > 0
-    ? faq
-        .map(
-          (item) =>
-            `  - question: ${JSON.stringify(item.question)}
-    answer: ${JSON.stringify(item.answer)}`
-        )
-        .join("\n")
-    : "  []"
-}
+${(article.faq || []).map((f) => `  - question: ${JSON.stringify(f.question)}\n    answer: ${JSON.stringify(f.answer)}`).join("\n")}
 ---
 
+${cleanContent}
 `;
 
-  // ----------------------------------------------------------
-  // ARTICLE CONTENT
-  // ----------------------------------------------------------
-
-  let content =
-    article.content
-      .trim();
-
-  // YouTube embeds are added only
-  // when valid videos exist.
-
-  if (
-    videos.length > 0
-  ) {
-
-    content +=
-      `\n\n## Video Tutorials & Inspiration\n\n`;
-
-    content +=
-      videos
-        .map(
-          (video) =>
-            `<div class="video-embed" style="position:relative;width:100%;aspect-ratio:16/9;margin:24px 0;overflow:hidden;border-radius:16px;">
-  <iframe
-    src="https://www.youtube.com/embed/${video.videoId}"
-    title="${video.title.replace(/"/g, "&quot;")}"
-    loading="lazy"
-    style="width:100%;height:100%;border:0;"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen>
-  </iframe>
-</div>`
-        )
-        .join("\n\n");
-  }
-
-  // ----------------------------------------------------------
-  // FINAL MARKDOWN
-  // ----------------------------------------------------------
-
-  const finalContent =
-    frontmatter +
-    content +
-    "\n";
-
-  // ----------------------------------------------------------
-  // SAFE SLUG
-  // ----------------------------------------------------------
-
-  const safeSlug =
-    slugify(
-      article.slug
-    );
-
-  if (!safeSlug) {
-    throw new Error(
-      "Generated article has an invalid slug"
-    );
-  }
-
-  const filename =
-    `${safeSlug}.md`;
-
-  const filePath =
-    path.join(
-      ARTICLES_DIR,
-      filename
-    );
-
-  // ----------------------------------------------------------
-  // WRITE ARTICLE
-  // ----------------------------------------------------------
-
-  fs.writeFileSync(
-    filePath,
-    finalContent,
-    "utf8"
-  );
-
-  console.log(
-    "================================="
-  );
-
-  console.log(
-    "ARTICLE CREATED SUCCESSFULLY"
-  );
-
-  console.log(
-    "================================="
-  );
-
-  console.log(
-    `Title: ${article.title}`
-  );
-
-  console.log(
-    `Slug: ${safeSlug}`
-  );
-
-  console.log(
-    `Category: ${article.category || "Beauty"}`
-  );
-
-  console.log(
-    `YouTube videos: ${videos.length}`
-  );
-
-  console.log(
-    `File: ${filePath}`
-  );
-
-  console.log(
-    "================================="
-  );
+  fs.writeFileSync(filePath, frontmatter, "utf8");
+  console.log(`✅ [Success] Generated & Saved: ${filePath}`);
 }
 
-// ============================================================
-// RUN
-// ============================================================
+async function main() {
+  const count = parseInt(process.argv[2] || "1", 10);
+  console.log(`Starting publication cycle for ${count} post(s)...`);
 
-run().catch(
-  (error) => {
-
-    console.error(
-      "================================="
-    );
-
-    console.error(
-      "FATAL ERROR"
-    );
-
-    console.error(
-      "================================="
-    );
-
-    console.error(
-      error
-    );
-
-    process.exit(1);
+  for (let i = 1; i <= count; i++) {
+    console.log(`\n--- Generating Post ${i} of ${count} ---`);
+    try {
+      await generateSingleArticle();
+      if (i < count) {
+        console.log("Waiting 4 seconds before next generation...");
+        await sleep(4000);
+      }
+    } catch (err) {
+      console.error(`❌ Failed generating post ${i}:`, err.message);
+    }
   }
-);
+}
+
+main().catch((err) => {
+  console.error("Pipeline Fatal Error:", err);
+  process.exit(1);
+});
