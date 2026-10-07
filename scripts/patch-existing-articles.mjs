@@ -62,21 +62,28 @@ const PATCH_REGISTRY = [
 ];
 
 // ============================================================
-// GEMINI API CLIENT
+// GEMINI API CLIENT (Using robust models & interaction configs)
 // ============================================================
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
 const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 4000;
+const RETRY_DELAY_MS = 3000;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function callGemini({ model, prompt, useSearch = false }) {
+async function callGemini({ model, prompt, useSearch = false, jsonMode = false }) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
   const body = {
-    contents: [{ parts: [{ text: prompt }] }]
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {}
   };
+
+  if (jsonMode) {
+    body.generationConfig.responseMimeType = "application/json";
+  }
+
   if (useSearch) {
     body.tools = [{ google_search: {} }];
   }
+
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -85,6 +92,7 @@ async function callGemini({ model, prompt, useSearch = false }) {
     },
     body: JSON.stringify(body)
   });
+
   const text = await response.text();
   if (!response.ok) {
     let msg = text;
@@ -96,22 +104,23 @@ async function callGemini({ model, prompt, useSearch = false }) {
     err.status = response.status;
     throw err;
   }
+
   const data = JSON.parse(text);
   const output = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("").trim();
   if (!output) throw new Error("Empty response from Gemini");
   return output;
 }
 
-async function callGeminiSafe({ prompt, useSearch = false }) {
+async function callGeminiSafe({ prompt, useSearch = false, jsonMode = false }) {
   let lastError = null;
   for (const model of GEMINI_MODELS) {
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         console.log(`[Gemini] Model ${model} - Attempt ${attempt}/${MAX_RETRIES}`);
-        return await callGemini({ model, prompt, useSearch });
+        return await callGemini({ model, prompt, useSearch, jsonMode });
       } catch (err) {
         lastError = err;
-        console.warn(`[Gemini] Attempt failed: ${err.message}`);
+        console.warn(`[Gemini] Attempt failed (${model}): ${err.message}`);
         if (attempt < MAX_RETRIES) await sleep(RETRY_DELAY_MS);
       }
     }
@@ -128,6 +137,23 @@ function cleanJson(text) {
     val = val.slice(firstBrace, lastBrace + 1);
   }
   return val.trim();
+}
+
+function robustJsonParse(text) {
+  const cleaned = cleanJson(text);
+  try {
+    return JSON.parse(cleaned);
+  } catch (err) {
+    // If there are raw unescaped newlines/tabs inside string literals, fix them
+    const fixed = cleaned
+      .replace(/[\u0000-\u001F]+/g, (match) => {
+        if (match === "\n") return "\\n";
+        if (match === "\r") return "\\r";
+        if (match === "\t") return "\\t";
+        return "";
+      });
+    return JSON.parse(fixed);
+  }
 }
 
 // ============================================================
@@ -164,7 +190,6 @@ async function fetchLongYouTubeTutorial(searchKey) {
         channel: item.snippet.channelTitle
       }));
 
-    // Fallback: any duration
     if (videos.length === 0) {
       url.searchParams.delete("videoDuration");
       const fallbackRes = await fetch(url);
@@ -196,24 +221,13 @@ async function patchArticle(entry) {
   console.log(`========================================`);
 
   const filePath = path.join(ARTICLES_DIR, entry.filename);
-  if (!fs.existsSync(filePath)) {
-    console.warn(`⚠️  File not found, skipping: ${filePath}`);
-    return;
-  }
 
   // Step 1: Research via Gemini + Google Search Grounding
   const researchPrompt = `
 You are a senior beauty journalist and SEO specialist.
-Search Google for the top-ranking international articles and salon tutorials about: "${entry.topic}".
-Current year: 2026.
+Search Google for top salon guides and trend reports on: "${entry.topic}". Year: 2026.
 
-Synthesize:
-- Detailed breakdown of what makes this trend unique in 2026
-- Specific salon formulas, cutting angles, product ingredients, and tool recommendations
-- Comprehensive face shape matching (oval, square, round, heart) and hair/skin texture analysis
-- Step-by-step masterclass technique (at least 5 detailed steps)
-- Common mistakes to avoid and pro stylist secrets
-- Longevity, maintenance schedules, and at-home aftercare
+Synthesize key salon techniques, cutting angles, product ingredients, face shape rules, and styling steps.
 
 Return ONLY a JSON object:
 {
@@ -222,8 +236,8 @@ Return ONLY a JSON object:
 }
 `;
 
-  const researchText = await callGeminiSafe({ prompt: researchPrompt, useSearch: true });
-  const research = JSON.parse(cleanJson(researchText));
+  const researchText = await callGeminiSafe({ prompt: researchPrompt, useSearch: true, jsonMode: true });
+  const research = robustJsonParse(researchText);
   console.log(`✅ Research complete.`);
 
   // Step 2: Fetch YouTube tutorial
@@ -274,13 +288,12 @@ Return ONLY a valid JSON object:
 }
 `;
 
-  const articleText = await callGeminiSafe({ prompt: articlePrompt, useSearch: false });
-  const article = JSON.parse(cleanJson(articleText));
+  const articleText = await callGeminiSafe({ prompt: articlePrompt, useSearch: false, jsonMode: true });
+  const article = robustJsonParse(articleText);
   console.log(`✅ Article generated.`);
 
   const now = new Date().toISOString().split("T")[0];
   let cleanContent = article.content.trim();
-  // Remove any accidental H1 at the top
   cleanContent = cleanContent.replace(/^#\s+[^\n]+\n+/, "").trim();
 
   // IN-CONTEXT VIDEO INJECTION: right after Step-by-Step section
@@ -318,7 +331,7 @@ Return ONLY a valid JSON object:
   const wordCount = cleanContent.split(/\s+/).length;
   console.log(`📊 Word Count: ${wordCount} words`);
 
-  // Build frontmatter — keep the ORIGINAL filename (slug stays same for existing URLs)
+  // Build frontmatter — keep the ORIGINAL filename so live links stay intact
   const frontmatter = `---
 title: ${JSON.stringify(article.title)}
 description: ${JSON.stringify(article.description)}
@@ -356,15 +369,15 @@ async function main() {
     try {
       await patchArticle(entry);
       if (i < PATCH_REGISTRY.length - 1) {
-        console.log("\n⏳ Waiting 5s before next article...");
-        await sleep(5000);
+        console.log("\n⏳ Waiting 4s before next article...");
+        await sleep(4000);
       }
     } catch (err) {
       console.error(`❌ Failed patching ${entry.filename}:`, err.message);
     }
   }
 
-  console.log(`\n🎉 All articles patched successfully!`);
+  console.log(`\n🎉 All articles processed!`);
 }
 
 main().catch((err) => {
