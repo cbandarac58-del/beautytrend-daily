@@ -17,7 +17,10 @@ export async function getStaticPaths() {
 const { article } = Astro.props;
 const { Content } = await render(article);
 
+const allArticles = await getCollection('articles');
+const slug = article.id.replace(/\.md$/, '');
 const siteUrl = 'https://beautytrend-daily.pages.dev';
+const canonicalUrl = `${siteUrl}/articles/${slug}/`;
 
 const {
   title,
@@ -27,27 +30,17 @@ const {
   keywords = [],
   publishedAt,
   updatedAt,
+  heroImage,
+  imageCredit,
   youtube = [],
   faq = [],
 } = article.data;
 
-const slug = article.id.replace(/\.md$/, '');
-
-const canonicalUrl = `${siteUrl}/articles/${slug}/`;
-
-const categorySlug = category
-  .toLowerCase()
-  .trim()
-  .replace(/\s+/g, '-');
-
-const formattedDate = new Date(publishedAt).toLocaleDateString(
-  'en-US',
-  {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }
-);
+const formattedDate = new Date(publishedAt).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
 
 const formattedUpdatedDate = updatedAt
   ? new Date(updatedAt).toLocaleDateString('en-US', {
@@ -57,83 +50,52 @@ const formattedUpdatedDate = updatedAt
     })
   : null;
 
-/* -----------------------------
-   ARTICLE SCHEMA
------------------------------ */
+const categorySlug = (category || 'beauty-trends')
+  .toLowerCase()
+  .replace(/\s+/g, '-');
 
+// Fallback high-res image if none in frontmatter
+const featuredImage =
+  heroImage ||
+  'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80';
+
+// Related articles from same category (excluding current)
+const relatedArticles = allArticles
+  .filter((a) => a.id !== article.id && a.data.category === category)
+  .slice(0, 2);
+
+// Schema.org Article Data
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: title,
-  description: description,
+  description,
+  image: [featuredImage],
   datePublished: new Date(publishedAt).toISOString(),
   dateModified: updatedAt
     ? new Date(updatedAt).toISOString()
     : new Date(publishedAt).toISOString(),
-
   mainEntityOfPage: {
     '@type': 'WebPage',
     '@id': canonicalUrl,
   },
-
   author: {
     '@type': 'Organization',
-    name: 'BeautyTrend Daily',
+    name: 'BeautyTrend Daily Editorial',
     url: siteUrl,
   },
-
   publisher: {
     '@type': 'Organization',
     name: 'BeautyTrend Daily',
     url: siteUrl,
   },
-
   articleSection: category,
-
-  keywords: keywords.join(', '),
-
-  isPartOf: {
-    '@type': 'WebSite',
-    name: 'BeautyTrend Daily',
-    url: siteUrl,
-  },
+  keywords: (keywords || []).join(', '),
 };
 
-/* -----------------------------
-   BREADCRUMB SCHEMA
------------------------------ */
-
-const breadcrumbSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
-  itemListElement: [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      name: 'Home',
-      item: `${siteUrl}/`,
-    },
-    {
-      '@type': 'ListItem',
-      position: 2,
-      name: category,
-      item: `${siteUrl}/category/${categorySlug}/`,
-    },
-    {
-      '@type': 'ListItem',
-      position: 3,
-      name: title,
-      item: canonicalUrl,
-    },
-  ],
-};
-
-/* -----------------------------
-   FAQ SCHEMA
------------------------------ */
-
+// Schema.org FAQ Data
 const faqSchema =
-  faq.length > 0
+  faq && faq.length > 0
     ? {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -147,810 +109,397 @@ const faqSchema =
         })),
       }
     : null;
-
-/* -----------------------------
-   RELATED ARTICLES
------------------------------ */
-
-const allArticles = await getCollection('articles');
-
-const relatedArticles = allArticles
-  .filter((item) => item.id !== article.id)
-  .filter((item) => item.data.category === category)
-  .sort(
-    (a, b) =>
-      new Date(b.data.publishedAt).getTime() -
-      new Date(a.data.publishedAt).getTime()
-  )
-  .slice(0, 3);
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#faf8f7" />
 
     <title>{title} | BeautyTrend Daily</title>
-
-    <meta
-      name="description"
-      content={description}
-    />
-
-    <meta
-      name="keywords"
-      content={keywords.join(', ')}
-    />
-
-    <meta
-      name="robots"
-      content="index, follow, max-image-preview:large"
-    />
-
-    <link
-      rel="canonical"
-      href={canonicalUrl}
-    />
+    <meta name="description" content={description} />
+    <meta name="keywords" content={keywords.join(', ')} />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href={canonicalUrl} />
 
     <!-- Open Graph -->
-
-    <meta
-      property="og:type"
-      content="article"
-    />
-
-    <meta
-      property="og:title"
-      content={title}
-    />
-
-    <meta
-      property="og:description"
-      content={description}
-    />
-
-    <meta
-      property="og:url"
-      content={canonicalUrl}
-    />
-
-    <meta
-      property="og:site_name"
-      content="BeautyTrend Daily"
-    />
-
-    <meta
-      property="article:published_time"
-      content={new Date(publishedAt).toISOString()}
-    />
-
-    <meta
-      property="article:section"
-      content={category}
-    />
-
-    {updatedAt && (
-      <meta
-        property="article:modified_time"
-        content={new Date(updatedAt).toISOString()}
-      />
-    )}
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content="BeautyTrend Daily" />
+    <meta property="og:image" content={featuredImage} />
+    <meta property="article:published_time" content={new Date(publishedAt).toISOString()} />
+    <meta property="article:section" content={category} />
 
     <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={featuredImage} />
 
-    <meta
-      name="twitter:card"
-      content="summary_large_image"
-    />
-
-    <meta
-      name="twitter:title"
-      content={title}
-    />
-
-    <meta
-      name="twitter:description"
-      content={description}
-    />
-
-    <!-- Article Schema -->
-
-    <script
-      type="application/ld+json"
-      set:html={JSON.stringify(articleSchema)}
-    />
-
-    <!-- Breadcrumb Schema -->
-
-    <script
-      type="application/ld+json"
-      set:html={JSON.stringify(breadcrumbSchema)}
-    />
-
-    <!-- FAQ Schema -->
-
-    {faqSchema && (
-      <script
-        type="application/ld+json"
-        set:html={JSON.stringify(faqSchema)}
-      />
-    )}
+    <!-- Structured Data -->
+    <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
+    {faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
 
     <style>
-      :global(*) {
-        box-sizing: border-box;
-      }
-
-      :global(html) {
-        scroll-behavior: smooth;
-      }
-
-      :global(body) {
+      :global(*) { box-sizing: border-box; }
+      body {
         margin: 0;
-        background: #faf8f7;
-        color: #292221;
-        font-family:
-          Inter,
-          ui-sans-serif,
-          system-ui,
-          -apple-system,
-          BlinkMacSystemFont,
-          "Segoe UI",
-          sans-serif;
+        background: #ffffff;
+        color: #202020;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.7;
       }
-
-      :global(a) {
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      /* HEADER */
-
       .site-header {
+        border-bottom: 1px solid #eeeeee;
+        background: #ffffff;
         position: sticky;
         top: 0;
-        z-index: 20;
-        background: rgba(255, 255, 255, 0.96);
-        border-bottom: 1px solid #eee6e3;
-        backdrop-filter: blur(12px);
+        z-index: 100;
       }
-
       .header-inner {
-        width: min(1120px, calc(100% - 40px));
-        min-height: 72px;
+        max-width: 1100px;
         margin: 0 auto;
-
+        padding: 16px 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-
-        gap: 25px;
       }
-
       .logo {
-        color: #292221;
+        color: #111111;
         text-decoration: none;
-
-        font-size: 23px;
+        font-size: 22px;
         font-weight: 800;
-        letter-spacing: -1px;
-
-        white-space: nowrap;
+        letter-spacing: -0.5px;
       }
-
-      .logo span {
-        font-weight: 400;
-      }
-
+      .logo span { color: #d65d7a; }
       .back-link {
-        color: #6d6260;
+        color: #666;
         text-decoration: none;
         font-size: 14px;
         font-weight: 600;
       }
-
-      .back-link:hover {
-        color: #a15e68;
-      }
-
-      /* ARTICLE */
+      .back-link:hover { color: #d65d7a; }
 
       .article-wrapper {
-        width: min(820px, calc(100% - 40px));
+        max-width: 820px;
         margin: 0 auto;
-
-        padding: 55px 0 80px;
+        padding: 45px 20px 80px;
       }
 
-      .category {
+      .category-pill {
         display: inline-block;
-
-        margin-bottom: 18px;
-        padding: 7px 12px;
-
+        margin-bottom: 16px;
+        padding: 6px 14px;
         border-radius: 999px;
-
-        background: #f1e3e1;
-        color: #955b64;
-
-        font-size: 12px;
-        font-weight: 800;
-
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
+        background: #fdf0f3;
+        color: #d65d7a;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
       }
+      .category-pill:hover { background: #fce1e7; }
 
       h1 {
-        margin: 0 0 20px;
-
-        color: #292221;
-
-        font-size:
-          clamp(
-            38px,
-            7vw,
-            62px
-          );
-
-        line-height: 1.06;
-
-        letter-spacing: -2.5px;
+        margin: 0 0 16px;
+        color: #111111;
+        font-size: clamp(30px, 5vw, 46px);
+        line-height: 1.15;
+        letter-spacing: -1px;
       }
 
       .excerpt {
-        margin: 0 0 24px;
-
-        color: #716563;
-
-        font-size: 19px;
-        line-height: 1.75;
+        margin: 0 0 20px;
+        color: #555555;
+        font-size: 18px;
+        line-height: 1.6;
       }
 
       .meta {
-        padding-bottom: 28px;
-        margin-bottom: 38px;
-
-        border-bottom: 1px solid #e9e0dd;
-
-        color: #817573;
-
+        padding-bottom: 24px;
+        margin-bottom: 30px;
+        border-bottom: 1px solid #eeeeee;
+        color: #777777;
         font-size: 14px;
       }
 
-      /* CONTENT */
+      .featured-figure {
+        margin: 0 0 40px;
+        width: 100%;
+      }
+      .featured-img {
+        width: 100%;
+        max-height: 480px;
+        object-fit: cover;
+        border-radius: 20px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      }
+      .img-caption {
+        font-size: 12px;
+        color: #888;
+        text-align: center;
+        margin-top: 8px;
+      }
 
       .article-content {
         font-size: 18px;
-        line-height: 1.85;
+        color: #242424;
       }
-
       .article-content :global(h2) {
-        margin-top: 48px;
-        margin-bottom: 17px;
-
-        color: #292221;
-
-        font-size: 30px;
+        margin-top: 42px;
+        margin-bottom: 16px;
+        color: #111111;
+        font-size: 26px;
         line-height: 1.25;
-
-        letter-spacing: -0.8px;
+        letter-spacing: -0.5px;
       }
-
       .article-content :global(h3) {
-        margin-top: 34px;
-        margin-bottom: 13px;
-
-        color: #292221;
-
-        font-size: 23px;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        color: #111111;
+        font-size: 21px;
         line-height: 1.35;
       }
-
-      .article-content :global(p) {
-        margin: 0 0 23px;
-      }
-
-      .article-content :global(ul),
-      .article-content :global(ol) {
-        margin: 0 0 27px;
+      .article-content :global(p) { margin: 0 0 22px; }
+      .article-content :global(ul), .article-content :global(ol) {
+        margin: 0 0 25px;
         padding-left: 28px;
       }
-
-      .article-content :global(li) {
-        margin-bottom: 9px;
-      }
-
-      .article-content :global(a) {
-        color: #9b5864;
-        font-weight: 600;
-      }
-
+      .article-content :global(li) { margin-bottom: 8px; }
       .article-content :global(blockquote) {
-        margin: 32px 0;
-
-        padding: 20px 24px;
-
-        border-left: 4px solid #c98d97;
-
-        background: #f7efed;
-
-        color: #655957;
+        margin: 30px 0;
+        padding: 18px 24px;
+        border-left: 4px solid #d65d7a;
+        background: #faf5f6;
+        color: #444;
+        border-radius: 0 12px 12px 0;
       }
 
-      /* VIDEOS */
-
-      .videos {
-        margin-top: 58px;
-        padding-top: 38px;
-
-        border-top: 1px solid #e9e0dd;
+      .videos-section {
+        margin-top: 55px;
+        padding-top: 35px;
+        border-top: 1px solid #eeeeee;
       }
-
-      .videos h2 {
-        margin: 0 0 25px;
-
-        color: #292221;
-
-        font-size: 30px;
-        line-height: 1.2;
+      .videos-section h2 {
+        margin: 0 0 20px;
+        font-size: 26px;
+        color: #111;
       }
-
       .video-card {
-        margin-bottom: 38px;
+        margin-bottom: 30px;
       }
-
       .video-title {
-        margin: 0 0 13px;
-
-        color: #332a29;
-
-        font-size: 18px;
-        line-height: 1.45;
+        margin: 0 0 10px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #222;
       }
-
       .video-frame {
         position: relative;
-
         width: 100%;
-
         aspect-ratio: 16 / 9;
-
         overflow: hidden;
-
-        border-radius: 12px;
-
-        background: #e9e2df;
-
-        box-shadow:
-          0 8px 25px
-          rgba(56, 37, 34, 0.08);
+        border-radius: 16px;
+        background: #000;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
       }
-
       .video-frame iframe {
         width: 100%;
         height: 100%;
-
         border: 0;
       }
 
-      /* RELATED ARTICLES */
-
-      .related {
-        margin-top: 60px;
-        padding-top: 38px;
-
-        border-top: 1px solid #e9e0dd;
+      .faq-section {
+        margin-top: 55px;
+        padding-top: 35px;
+        border-top: 1px solid #eeeeee;
       }
-
-      .related h2 {
-        margin: 0 0 25px;
-
-        color: #292221;
-
-        font-size: 30px;
+      .faq-section h2 {
+        margin: 0 0 24px;
+        font-size: 26px;
+        color: #111;
       }
-
-      .related-grid {
-        display: grid;
-
-        grid-template-columns:
-          repeat(
-            3,
-            minmax(0, 1fr)
-          );
-
-        gap: 18px;
-      }
-
-      .related-card {
-        display: block;
-
-        padding: 20px;
-
-        background: #ffffff;
-
-        border: 1px solid #eee5e2;
-        border-radius: 10px;
-
-        color: #292221;
-
-        text-decoration: none;
-
-        transition:
-          transform .2s,
-          box-shadow .2s;
-      }
-
-      .related-card:hover {
-        transform: translateY(-3px);
-
-        box-shadow:
-          0 10px 25px
-          rgba(56, 37, 34, 0.08);
-      }
-
-      .related-category {
-        margin: 0 0 9px;
-
-        color: #a15e68;
-
-        font-size: 10px;
-        font-weight: 800;
-
-        letter-spacing: 1px;
-        text-transform: uppercase;
-      }
-
-      .related-title {
-        margin: 0;
-
-        font-size: 17px;
-        line-height: 1.45;
-      }
-
-      /* FAQ */
-
-      .faq {
-        margin-top: 60px;
-        padding-top: 38px;
-
-        border-top: 1px solid #e9e0dd;
-      }
-
-      .faq h2 {
-        margin: 0 0 28px;
-
-        color: #292221;
-
-        font-size: 30px;
-        line-height: 1.2;
-      }
-
       .faq-item {
-        margin-bottom: 28px;
-
-        padding-bottom: 25px;
-
-        border-bottom: 1px solid #eee5e2;
+        background: #faf8f7;
+        padding: 20px 24px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+        border: 1px solid #eee5e2;
       }
-
       .faq-question {
-        margin: 0 0 10px;
-
-        color: #332a29;
-
-        font-size: 18px;
-        line-height: 1.45;
+        margin: 0 0 8px;
+        font-size: 17px;
+        font-weight: 700;
+        color: #111;
       }
-
       .faq-answer {
         margin: 0;
-
-        color: #655957;
-
-        font-size: 16px;
-        line-height: 1.75;
+        color: #555;
+        font-size: 15px;
+        line-height: 1.6;
       }
 
-      /* FOOTER */
+      .related-section {
+        margin-top: 55px;
+        padding-top: 35px;
+        border-top: 1px solid #eeeeee;
+      }
+      .related-section h2 {
+        margin: 0 0 20px;
+        font-size: 24px;
+        color: #111;
+      }
+      .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+      }
+      .related-card {
+        padding: 20px;
+        background: #faf8f7;
+        border-radius: 14px;
+        text-decoration: none;
+        border: 1px solid #ece7e4;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .related-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+      }
+      .related-card h3 {
+        margin: 0 0 8px;
+        font-size: 17px;
+        color: #111;
+        line-height: 1.35;
+      }
+      .related-card p {
+        margin: 0;
+        font-size: 13px;
+        color: #666;
+        line-height: 1.5;
+      }
 
       .site-footer {
-        padding: 38px 20px;
-
-        border-top: 1px solid #e9e0dd;
-
-        background: #ffffff;
-
+        padding: 40px 20px;
+        border-top: 1px solid #eeeeee;
         text-align: center;
-
-        color: #817573;
-
+        color: #777;
+        font-size: 14px;
+        background: #faf8f7;
+      }
+      .footer-links {
+        margin-bottom: 12px;
+      }
+      .footer-links a {
+        color: #555;
+        text-decoration: none;
+        margin: 0 10px;
         font-size: 13px;
       }
-
-      /* TABLET */
-
-      @media (max-width: 800px) {
-        .related-grid {
-          grid-template-columns:
-            repeat(
-              2,
-              minmax(0, 1fr)
-            );
-        }
-
-        .article-wrapper {
-          padding-top: 45px;
-        }
-      }
-
-      /* MOBILE */
-
-      @media (max-width: 560px) {
-        .header-inner {
-          width: calc(100% - 30px);
-
-          min-height: 64px;
-        }
-
-        .logo {
-          font-size: 20px;
-        }
-
-        .back-link {
-          font-size: 12px;
-        }
-
-        .article-wrapper {
-          width: calc(100% - 30px);
-
-          padding: 35px 0 60px;
-        }
-
-        h1 {
-          font-size: 38px;
-
-          letter-spacing: -1.5px;
-        }
-
-        .excerpt {
-          font-size: 17px;
-        }
-
-        .article-content {
-          font-size: 17px;
-          line-height: 1.8;
-        }
-
-        .article-content :global(h2) {
-          font-size: 27px;
-        }
-
-        .article-content :global(h3) {
-          font-size: 21px;
-        }
-
-        .related-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .videos h2,
-        .related h2,
-        .faq h2 {
-          font-size: 27px;
-        }
-      }
+      .footer-links a:hover { color: #d65d7a; }
     </style>
   </head>
 
   <body>
-
-    <!-- HEADER -->
-
     <header class="site-header">
       <div class="header-inner">
-
-        <a
-          class="logo"
-          href="/"
-          aria-label="BeautyTrend Daily home"
-        >
-          BeautyTrend<span>Daily</span>
-        </a>
-
-        <a
-          class="back-link"
-          href="/"
-        >
-          ← Latest Articles
-        </a>
-
+        <a class="logo" href="/">BeautyTrend<span>Daily</span></a>
+        <a class="back-link" href="/">← Latest Articles</a>
       </div>
     </header>
 
-
-    <!-- MAIN ARTICLE -->
-
     <main>
-
       <article class="article-wrapper">
-
-        <!-- CATEGORY -->
-
-        <a
-          class="category"
-          href={`/category/${categorySlug}/`}
-        >
+        <a class="category-pill" href={`/category/${categorySlug}/`}>
           {category}
         </a>
 
-        <!-- TITLE -->
-
-        <h1>
-          {title}
-        </h1>
-
-        <!-- EXCERPT -->
+        <h1>{title}</h1>
 
         <p class="excerpt">
           {excerpt || description}
         </p>
 
-        <!-- DATE -->
-
         <div class="meta">
-
           Published {formattedDate}
-
-          {formattedUpdatedDate && (
-            <>
-              · Updated {formattedUpdatedDate}
-            </>
-          )}
-
+          {formattedUpdatedDate && <> · Updated {formattedUpdatedDate}</>}
         </div>
 
-
-        <!-- ARTICLE CONTENT -->
+        <figure class="featured-figure">
+          <img src={featuredImage} alt={title} class="featured-img" loading="eager" />
+          {imageCredit && <figcaption class="img-caption">{imageCredit}</figcaption>}
+        </figure>
 
         <div class="article-content">
           <Content />
         </div>
 
-
-        <!-- VIDEOS -->
-
-        {youtube.length > 0 && (
-          <section
-            class="videos"
-            aria-labelledby="videos-title"
-          >
-
-            <h2 id="videos-title">
-              Video Tutorials & Inspiration
-            </h2>
-
-            {youtube.map((video) => (
-
-              <div class="video-card">
-
-                <h3 class="video-title">
-                  {video.title}
-                </h3>
-
-                <div class="video-frame">
-
-                  <iframe
-                    src={`https://www.youtube-nocookie.com/embed/${video.videoId}`}
-                    title={video.title}
-                    loading="lazy"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowfullscreen
-                  ></iframe>
-
+        {
+          youtube && youtube.length > 0 && (
+            <section class="videos-section">
+              <h2>Video Tutorials & Inspiration</h2>
+              {youtube.map((video) => (
+                <div class="video-card">
+                  <h3 class="video-title">{video.title}</h3>
+                  <div class="video-frame">
+                    <iframe
+                      src={`https://www.youtube-nocookie.com/embed/${video.videoId}`}
+                      title={video.title}
+                      loading="lazy"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowfullscreen
+                    />
+                  </div>
                 </div>
-
-              </div>
-
-            ))}
-
-          </section>
-        )}
-
-
-        <!-- RELATED ARTICLES -->
-
-        {relatedArticles.length > 0 && (
-          <section
-            class="related"
-            aria-labelledby="related-title"
-          >
-
-            <h2 id="related-title">
-              More From {category}
-            </h2>
-
-            <div class="related-grid">
-
-              {relatedArticles.map((related) => (
-
-                <a
-                  class="related-card"
-                  href={`/articles/${related.id.replace(
-                    /\.md$/,
-                    ''
-                  )}/`}
-                >
-
-                  <p class="related-category">
-                    {related.data.category}
-                  </p>
-
-                  <h3 class="related-title">
-                    {related.data.title}
-                  </h3>
-
-                </a>
-
               ))}
+            </section>
+          )
+        }
 
-            </div>
+        {
+          faq && faq.length > 0 && (
+            <section class="faq-section">
+              <h2>Frequently Asked Questions</h2>
+              {faq.map((item) => (
+                <div class="faq-item">
+                  <h3 class="faq-question">{item.question}</h3>
+                  <p class="faq-answer">{item.answer}</p>
+                </div>
+              ))}
+            </section>
+          )
+        }
 
-          </section>
-        )}
-
-
-        <!-- FAQ -->
-
-        {faq.length > 0 && (
-          <section
-            class="faq"
-            aria-labelledby="faq-title"
-          >
-
-            <h2 id="faq-title">
-              Frequently Asked Questions
-            </h2>
-
-            {faq.map((item) => (
-
-              <div class="faq-item">
-
-                <h3 class="faq-question">
-                  {item.question}
-                </h3>
-
-                <p class="faq-answer">
-                  {item.answer}
-                </p>
-
+        {
+          relatedArticles.length > 0 && (
+            <section class="related-section">
+              <h2>More From {category}</h2>
+              <div class="related-grid">
+                {relatedArticles.map((rel) => (
+                  <a class="related-card" href={`/articles/${rel.id.replace(/\.md$/, '')}/`}>
+                    <h3>{rel.data.title}</h3>
+                    <p>{rel.data.excerpt || rel.data.description}</p>
+                  </a>
+                ))}
               </div>
-
-            ))}
-
-          </section>
-        )}
-
+            </section>
+          )
+        }
       </article>
-
     </main>
 
-
-    <!-- FOOTER -->
-
     <footer class="site-footer">
-
-      © {new Date().getFullYear()}
-      BeautyTrend Daily.
-      All rights reserved.
-
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/privacy/">Privacy Policy</a>
+        <a href="/terms/">Terms</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div>© {new Date().getFullYear()} BeautyTrend Daily. All rights reserved.</div>
     </footer>
-
   </body>
 </html>
