@@ -2,14 +2,15 @@ name: Daily 3 Beauty Posts Automation
 
 on:
   schedule:
-    # 8:30 AM, 2:30 PM, 8:30 PM Sri Lanka Time
-    # GitHub Actions uses UTC
+    # Runs 3 times a day:
+    # 03:00 UTC (8:30 AM Sri Lanka / Morning Post)
+    # 09:00 UTC (2:30 PM Sri Lanka / Afternoon Post)
+    # 15:00 UTC (8:30 PM Sri Lanka / Evening Post)
     - cron: '0 3,9,15 * * *'
-
   workflow_dispatch:
     inputs:
       post_count:
-        description: 'Number of articles to generate'
+        description: 'Number of articles to generate (default: 1)'
         required: false
         default: '1'
 
@@ -21,175 +22,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      # ==========================================
-      # 1. CHECKOUT REPOSITORY
-      # ==========================================
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # ==========================================
-      # 2. SETUP NODE.JS
-      # ==========================================
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
 
-      # ==========================================
-      # 3. SHOW NODE VERSION
-      # ==========================================
-      - name: Check Node and npm versions
-        run: |
-          echo "Node version:"
-          node --version
-
-          echo "npm version:"
-          npm --version
-
-      # ==========================================
-      # 4. INSTALL DEPENDENCIES
-      # ==========================================
       - name: Install dependencies
         run: |
-          npm install
+          npm ci || npm install
 
-      # ==========================================
-      # 5. GENERATE ARTICLE(S)
-      # ==========================================
-      - name: Generate Beauty Article(s)
+      - name: Generate & Publish Article(s)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
           COUNT="${{ github.event.inputs.post_count || 1 }}"
+          node scripts/publish-daily-post.mjs "$COUNT"
 
-          echo "========================================"
-          echo "BEAUTYTREND DAILY"
-          echo "ARTICLE GENERATION"
-          echo "========================================"
-          echo "Articles requested: $COUNT"
-          echo "========================================"
-
-          if ! [[ "$COUNT" =~ ^[0-9]+$ ]]; then
-            echo "ERROR: post_count must be a number."
-            exit 1
-          fi
-
-          if [ "$COUNT" -lt 1 ]; then
-            echo "ERROR: post_count must be at least 1."
-            exit 1
-          fi
-
-          for ((i=1; i<=COUNT; i++)); do
-
-            echo ""
-            echo "----------------------------------------"
-            echo "Generating article $i of $COUNT"
-            echo "----------------------------------------"
-
-            node scripts/publish-daily-post.mjs
-
-            echo ""
-            echo "Article $i generated successfully."
-
-          done
-
-      # ==========================================
-      # 6. VERIFY GENERATED ARTICLES
-      # ==========================================
-      - name: Verify generated articles
+      - name: Commit and Push new articles
         run: |
-          echo "========================================"
-          echo "GENERATED ASTRO ARTICLES"
-          echo "========================================"
-
-          if [ ! -d "src/content/articles" ]; then
-            echo "ERROR: src/content/articles directory does not exist."
-            exit 1
-          fi
-
-          FILE_COUNT=$(find src/content/articles -maxdepth 1 -type f -name "*.md" | wc -l)
-
-          echo "Total article files found: $FILE_COUNT"
-
-          if [ "$FILE_COUNT" -eq 0 ]; then
-            echo "ERROR: No Markdown articles found."
-            exit 1
-          fi
-
-          echo ""
-          echo "Article files:"
-          find src/content/articles -maxdepth 1 -type f -name "*.md" -print
-
-      # ==========================================
-      # 7. BUILD ASTRO SITE
-      # ==========================================
-      - name: Build Astro site
-        run: |
-          echo "========================================"
-          echo "BUILDING ASTRO SITE"
-          echo "========================================"
-
-          npm run build
-
-          echo ""
-          echo "========================================"
-          echo "ASTRO BUILD SUCCESSFUL"
-          echo "========================================"
-
-      # ==========================================
-      # 8. CHECK GIT CHANGES
-      # ==========================================
-      - name: Check Git changes
-        run: |
-          echo "========================================"
-          echo "GIT CHANGES"
-          echo "========================================"
-
-          git status --short
-
-      # ==========================================
-      # 9. COMMIT NEW ARTICLES
-      # ==========================================
-      - name: Commit new articles
-        run: |
-          echo "========================================"
-          echo "COMMITTING NEW ARTICLES"
-          echo "========================================"
-
-          git config user.name "BeautyTrend Bot"
-          git config user.email "bot@beautytrend-daily.com"
-
+          git config --global user.name "BeautyTrend Bot"
+          git config --global user.email "bot@beautytrend-daily.com"
           git add src/content/articles/
-
-          if git diff --cached --quiet; then
+          if git diff --staged --quiet; then
             echo "No new articles found to commit."
-            exit 0
+          else
+            git commit -m "Auto-publish new beauty trend article(s) [skip ci]"
+            git pull --rebase origin main
+            git push origin main
           fi
-
-          echo ""
-          echo "Files ready to commit:"
-          git diff --cached --name-only
-
-          git commit -m "Auto-publish beauty trend article"
-
-      # ==========================================
-      # 10. PUSH TO GITHUB
-      # ==========================================
-      - name: Push articles to GitHub
-        run: |
-          echo "========================================"
-          echo "PUSHING ARTICLES TO GITHUB"
-          echo "========================================"
-
-          git pull --rebase origin main
-
-          git push origin main
-
-          echo ""
-          echo "========================================"
-          echo "ARTICLE PUBLISHED TO GITHUB"
-          echo "========================================"
