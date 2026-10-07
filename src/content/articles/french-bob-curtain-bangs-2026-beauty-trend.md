@@ -72,11 +72,3 @@ One of the reasons the French Bob with curtain bangs is so popular in 2026 is it
 ## Embracing Your Inner Parisian
 
 The French Bob with curtain bangs in 2026 is more than just a passing trend; it’s a statement of enduring style, confidence, and understated glamour. It’s about embracing that beautiful blend of polished and playful, sophisticated and accessible. Consult with your stylist to tailor the perfect length and layering for your unique features and hair type, and prepare to turn heads with this effortlessly chic masterpiece. This year, let your hair do the talking – with a distinct French accent.
-
-
-
-
-## Video Tutorials & Inspiration
-
-<div class="video-embed my-6 aspect-video w-full rounded-2xl overflow-hidden shadow-md"><iframe class="w-full h-full" src="https://www.youtube.com/embed/D6yHGdkJAtk" title="✅Tutorial Side See-through Bangs #haircut #hairtok #curtainbangtutorial" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
-<div class="video-embed my-6 aspect-video w-full rounded-2xl overflow-hidden shadow-md"><iframe class="w-full h-full" src="https://www.youtube.com/embed/vEMoUQrP-Og" title="This way of getting yourself flawless curtain bangs will blow your mind!" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
