@@ -101,16 +101,3 @@ Ultimately, this trend is highly adaptable, customizable to any age, style, or l
 ### Final Thoughts: The Enduring Appeal of Delicate Details
 
 As 2026 unfolds, minimalist 3D floral nail art stands as a testament to the enduring power of subtle beauty and intricate craftsmanship. It’s a trend that whispers rather than shouts, offering a refreshing departure from the bolder statements of previous years. By celebrating delicate dimensions, natural motifs, and thoughtful placement, it elevates the simple act of a manicure into an art form. Whether you're drawn to the ethereal charm of embedded dried petals, the sculptural elegance of gel-formed blooms, or the artistic simplicity of a single accent flower, this trend invites you to embrace a sophisticated aesthetic that is both timeless and utterly modern. Let your fingertips become a canvas for these tiny, beautiful wonders, expressing an inherent appreciation for grace, nature, and the quiet luxury that defines beauty in 2026. This season, adorn your nails not just with color, but with a story of delicate bloom, making every gesture a moment of refined artistry.
-
-## Video Tutorials & Inspiration
-
-<div class="video-embed" style="position:relative;width:100%;aspect-ratio:16/9;margin:24px 0;overflow:hidden;border-radius:16px;">
-  <iframe
-    src="https://www.youtube.com/embed/ZGxT6qJdVIw"
-    title="DIY &#39;Pool Nails&#39; Tutorial: Nail Art Inspiration for Your Summer Vibes | Splengo Beauty"
-    loading="lazy"
-    style="width:100%;height:100%;border:0;"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen>
-  </iframe>
-</div>
