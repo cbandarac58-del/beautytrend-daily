@@ -1,27 +1,17 @@
 import { defineCollection, z } from 'astro:content';
-import { glob } from 'astro/loaders';
 
 const articles = defineCollection({
-  loader: glob({
-    pattern: '**/*.md',
-    base: './src/content/articles',
-  }),
-
+  type: 'content',
   schema: z.object({
     title: z.string(),
-
     description: z.string(),
-
     excerpt: z.string().optional(),
-
     category: z.string(),
-
     keywords: z.array(z.string()).default([]),
-
     publishedAt: z.coerce.date(),
-
     updatedAt: z.coerce.date().optional(),
-
+    heroImage: z.string().optional(),
+    imageCredit: z.string().optional(),
     youtube: z
       .array(
         z.object({
@@ -30,7 +20,6 @@ const articles = defineCollection({
         })
       )
       .default([]),
-
     faq: z
       .array(
         z.object({
@@ -42,6 +31,4 @@ const articles = defineCollection({
   }),
 });
 
-export const collections = {
-  articles,
-};
+export const collections = { articles };
