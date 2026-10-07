@@ -259,16 +259,21 @@ function selectUniqueTopic() {
 // ============================================================
 // 2. GEMINI API CLIENT (Retries & Search Grounding)
 // ============================================================
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
 const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 4000;
+const RETRY_DELAY_MS = 3000;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function callGemini({ model, prompt, useSearch = false }) {
+async function callGemini({ model, prompt, useSearch = false, jsonMode = false }) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
   const body = {
-    contents: [{ parts: [{ text: prompt }] }]
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {}
   };
+
+  if (jsonMode) {
+    body.generationConfig.responseMimeType = "application/json";
+  }
 
   if (useSearch) {
     body.tools = [{ google_search: {} }];
@@ -301,16 +306,16 @@ async function callGemini({ model, prompt, useSearch = false }) {
   return output;
 }
 
-async function callGeminiSafe({ prompt, useSearch = false }) {
+async function callGeminiSafe({ prompt, useSearch = false, jsonMode = false }) {
   let lastError = null;
   for (const model of GEMINI_MODELS) {
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         console.log(`[Gemini] Model ${model} - Attempt ${attempt}/${MAX_RETRIES}`);
-        return await callGemini({ model, prompt, useSearch });
+        return await callGemini({ model, prompt, useSearch, jsonMode });
       } catch (err) {
         lastError = err;
-        console.warn(`[Gemini] Attempt failed: ${err.message}`);
+        console.warn(`[Gemini] Attempt failed (${model}): ${err.message}`);
         if (attempt < MAX_RETRIES) await sleep(RETRY_DELAY_MS);
       }
     }
@@ -327,6 +332,22 @@ function cleanJson(text) {
     val = val.slice(firstBrace, lastBrace + 1);
   }
   return val.trim();
+}
+
+function robustJsonParse(text) {
+  const cleaned = cleanJson(text);
+  try {
+    return JSON.parse(cleaned);
+  } catch (err) {
+    const fixed = cleaned
+      .replace(/[\u0000-\u001F]+/g, (match) => {
+        if (match === "\n") return "\\n";
+        if (match === "\r") return "\\r";
+        if (match === "\t") return "\\t";
+        return "";
+      });
+    return JSON.parse(fixed);
+  }
 }
 
 // ============================================================
@@ -420,8 +441,8 @@ Return ONLY a JSON object:
 }
 `;
 
-  const researchText = await callGeminiSafe({ prompt: researchPrompt, useSearch: true });
-  const research = JSON.parse(cleanJson(researchText));
+  const researchText = await callGeminiSafe({ prompt: researchPrompt, useSearch: true, jsonMode: true });
+  const research = robustJsonParse(researchText);
 
   // Step 2: Fetch 1 Long, Verified YouTube Tutorial Masterclass
   const videos = await fetchLongYouTubeTutorial(topicItem.searchKey);
@@ -469,8 +490,8 @@ Return ONLY a valid JSON object:
 }
 `;
 
-  const articleText = await callGeminiSafe({ prompt: articlePrompt, useSearch: false });
-  const article = JSON.parse(cleanJson(articleText));
+  const articleText = await callGeminiSafe({ prompt: articlePrompt, useSearch: false, jsonMode: true });
+  const article = robustJsonParse(articleText);
 
   const now = new Date().toISOString().split("T")[0];
   const slug = (article.slug || topicItem.topic.toLowerCase().replace(/[^a-z0-9]+/g, "-")).replace(/^-|-$/g, "");
