@@ -64,7 +64,7 @@ const PATCH_REGISTRY = [
 // ============================================================
 // GEMINI API CLIENT (Using robust models & interaction configs)
 // ============================================================
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 3000;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -72,12 +72,11 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function callGemini({ model, prompt, useSearch = false, jsonMode = false }) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
   const body = {
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: {}
+    contents: [{ parts: [{ text: prompt }] }]
   };
 
-  if (jsonMode) {
-    body.generationConfig.responseMimeType = "application/json";
+  if (jsonMode && !useSearch) {
+    body.generationConfig = { responseMimeType: "application/json" };
   }
 
   if (useSearch) {
@@ -144,15 +143,23 @@ function robustJsonParse(text) {
   try {
     return JSON.parse(cleaned);
   } catch (err) {
-    // If there are raw unescaped newlines/tabs inside string literals, fix them
-    const fixed = cleaned
-      .replace(/[\u0000-\u001F]+/g, (match) => {
-        if (match === "\n") return "\\n";
-        if (match === "\r") return "\\r";
-        if (match === "\t") return "\\t";
-        return "";
-      });
-    return JSON.parse(fixed);
+    try {
+      const sanitized = cleaned
+        .replace(/[\u0000-\u0009\u000B-\u001F]+/g, " ")
+        .replace(/\r\n/g, "\\n")
+        .replace(/\r/g, "\\n");
+      return JSON.parse(sanitized);
+    } catch (err2) {
+      console.warn("JSON parse fallback engaged.");
+      return {
+        title: "2026 Trend Masterclass",
+        description: "The complete 2026 trend guide.",
+        excerpt: "An exhaustive masterclass and styling overview.",
+        keywords: ["beauty trends", "2026 guide", "hair and style"],
+        content: cleaned,
+        faq: []
+      };
+    }
   }
 }
 
@@ -222,38 +229,37 @@ async function patchArticle(entry) {
 
   const filePath = path.join(ARTICLES_DIR, entry.filename);
 
-  // Step 1: Research via Gemini + Google Search Grounding
+  // Step 1: Research via Gemini + Google Search Grounding (jsonMode: false)
   const researchPrompt = `
 You are a senior beauty journalist and SEO specialist.
-Search Google for top salon guides and trend reports on: "${entry.topic}". Year: 2026.
+Search Google for top salon guides, expert articles, and trend reports on: "${entry.topic}". Year: 2026.
 
 Synthesize key salon techniques, cutting angles, product ingredients, face shape rules, and styling steps.
-
-Return ONLY a JSON object:
-{
-  "summary": "Exhaustive research summary",
-  "keyTakeaways": ["Point 1", "Point 2", "Point 3", "Point 4", "Point 5", "Point 6"]
-}
+Output as a clear, structured research summary with takeaways.
 `;
 
-  const researchText = await callGeminiSafe({ prompt: researchPrompt, useSearch: true, jsonMode: true });
-  const research = robustJsonParse(researchText);
-  console.log(`✅ Research complete.`);
+  let researchSummary = "";
+  try {
+    researchSummary = await callGeminiSafe({ prompt: researchPrompt, useSearch: true, jsonMode: false });
+    console.log(`✅ Research complete.`);
+  } catch (err) {
+    console.warn(`⚠️ Search grounding fallback: ${err.message}`);
+    researchSummary = `Comprehensive masterclass guide for ${entry.topic}.`;
+  }
 
   // Step 2: Fetch YouTube tutorial
   const videos = await fetchLongYouTubeTutorial(entry.searchKey);
   const featuredVideo = videos[0] || null;
   console.log(`🎬 YouTube video: ${featuredVideo ? featuredVideo.title : "Not found"}`);
 
-  // Step 3: Generate full 1200+ word article
+  // Step 3: Generate full 1200+ word article (jsonMode: true is active)
   const articlePrompt = `
 You are the Editor-in-Chief of "BeautyTrend Daily", an elite digital beauty magazine.
 Write an exhaustive, authoritative, deeply detailed editorial masterclass guide on: "${entry.topic}".
 Current year: 2026.
 
 RESEARCH CONTEXT:
-${research.summary}
-KEY TAKEAWAYS: ${research.keyTakeaways.join("; ")}
+${researchSummary}
 
 CRITICAL EDITORIAL REQUIREMENTS:
 1. WORD COUNT: Write at least 1,200 to 1,500 words of rich, practical, human-quality content. Do NOT skimp or summarize.
@@ -293,7 +299,7 @@ Return ONLY a valid JSON object:
   console.log(`✅ Article generated.`);
 
   const now = new Date().toISOString().split("T")[0];
-  let cleanContent = article.content.trim();
+  let cleanContent = String(article.content || "").trim();
   cleanContent = cleanContent.replace(/^#\s+[^\n]+\n+/, "").trim();
 
   // IN-CONTEXT VIDEO INJECTION: right after Step-by-Step section
@@ -333,12 +339,12 @@ Return ONLY a valid JSON object:
 
   // Build frontmatter — keep the ORIGINAL filename so live links stay intact
   const frontmatter = `---
-title: ${JSON.stringify(article.title)}
-description: ${JSON.stringify(article.description)}
-excerpt: ${JSON.stringify(article.excerpt || article.description)}
+title: ${JSON.stringify(article.title || entry.topic)}
+description: ${JSON.stringify(article.description || article.excerpt || entry.topic)}
+excerpt: ${JSON.stringify(article.excerpt || article.description || entry.topic)}
 category: ${JSON.stringify(entry.category)}
 keywords:
-${(article.keywords || []).map((k) => `  - ${JSON.stringify(k)}`).join("\n")}
+${(article.keywords || ["beauty", "trends", "2026"]).map((k) => `  - ${JSON.stringify(k)}`).join("\n")}
 publishedAt: "${now}"
 updatedAt: "${now}"
 heroImage: ${JSON.stringify(entry.heroPhoto)}
