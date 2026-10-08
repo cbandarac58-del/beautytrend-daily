@@ -69,6 +69,12 @@ const bodyText = article.body || '';
 const wordCount = bodyText.split(/\s+/).filter(Boolean).length;
 const readingTimeMin = Math.max(3, Math.ceil(wordCount / 220));
 
+// Check if content already includes video iframe
+const hasInlineVideo =
+  bodyText.includes('in-article-video') ||
+  bodyText.includes('youtube-nocookie.com') ||
+  bodyText.includes('youtube.com/embed');
+
 // Schema.org Article Data
 const articleSchema = {
   '@context': 'https://schema.org',
@@ -129,6 +135,10 @@ const faqSchema =
     <meta name="keywords" content={keywords.join(', ')} />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="article" />
@@ -217,8 +227,8 @@ const faqSchema =
       h1 {
         margin: 0 0 16px;
         color: #111111;
-        font-size: clamp(30px, 5vw, 44px);
-        line-height: 1.15;
+        font-size: clamp(28px, 5vw, 42px);
+        line-height: 1.18;
         letter-spacing: -1px;
       }
 
@@ -257,7 +267,7 @@ const faqSchema =
       }
       .featured-img {
         width: 100%;
-        max-height: 420px;
+        max-height: 440px;
         aspect-ratio: 16 / 9;
         object-fit: cover;
         border-radius: 16px;
@@ -271,6 +281,7 @@ const faqSchema =
         margin-top: 8px;
       }
 
+      /* ARTICLE BODY CONTENT STYLING */
       .article-content {
         font-size: 18px;
         color: #242424;
@@ -307,20 +318,48 @@ const faqSchema =
         border-radius: 0 12px 12px 0;
       }
 
-      /* IN-ARTICLE EMBEDDED MEDIA STYLING */
-      .article-content :global(.in-article-video) {
-        margin: 35px 0;
-        background: #111;
-        padding: 16px;
+      /* ALL IN-ARTICLE IMAGES UNIFORM SIZE & ASPECT RATIO */
+      .article-content :global(img),
+      .article-content :global(.in-article-img) {
+        width: 100%;
+        max-height: 420px;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
         border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        display: block;
+        margin: 30px auto;
+      }
+      .article-content :global(figure),
+      .article-content :global(.in-article-figure) {
+        margin: 35px 0;
+        text-align: center;
+      }
+      .article-content :global(figcaption),
+      .article-content :global(.in-article-caption) {
+        font-size: 13px;
+        color: #777;
+        margin-top: 8px;
+        text-align: center;
+      }
+
+      /* IN-ARTICLE EMBEDDED VIDEO */
+      .article-content :global(.in-article-video) {
+        margin: 40px 0;
+        background: #18181b;
+        padding: 20px;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       }
       .article-content :global(.video-label) {
-        color: #fff;
-        font-size: 14px;
+        color: #ffffff;
+        font-size: 15px;
         font-weight: 700;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
         padding: 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
       .article-content :global(.video-responsive-frame) {
         position: relative;
@@ -330,28 +369,58 @@ const faqSchema =
         border-radius: 12px;
         background: #000;
       }
-      .article-content :global(.video-responsive-frame iframe) {
+      .article-content :global(.video-responsive-frame iframe),
+      .article-content :global(iframe) {
+        width: 100%;
+        height: 100%;
+        aspect-ratio: 16 / 9;
+        border: 0;
+        border-radius: 12px;
+      }
+
+      /* DEDICATED VIDEO MASTERCLASS SECTION */
+      .video-masterclass-section {
+        margin-top: 45px;
+        padding: 24px;
+        background: #18181b;
+        border-radius: 20px;
+        color: #ffffff;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      }
+      .video-masterclass-section h2 {
+        margin: 0 0 18px;
+        font-size: 22px;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .video-card {
+        margin-bottom: 20px;
+      }
+      .video-card:last-child {
+        margin-bottom: 0;
+      }
+      .video-player-wrap {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #000;
+      }
+      .video-player-wrap iframe {
         width: 100%;
         height: 100%;
         border: 0;
+        display: block;
       }
-
-      .article-content :global(.in-article-figure) {
-        margin: 35px 0;
-        text-align: center;
-      }
-      .article-content :global(.in-article-img) {
-        width: 100%;
-        max-height: 400px;
-        aspect-ratio: 16 / 9;
-        object-fit: cover;
-        border-radius: 16px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-      }
-      .article-content :global(.in-article-caption) {
-        font-size: 12px;
-        color: #888;
-        margin-top: 8px;
+      .video-caption {
+        font-size: 14px;
+        color: #e4e4e7;
+        font-weight: 600;
+        margin-top: 12px;
+        padding: 0 4px;
       }
 
       .faq-section {
@@ -480,6 +549,31 @@ const faqSchema =
         <div class="article-content">
           <Content />
         </div>
+
+        {/* Video Masterclass Section if videos exist in frontmatter and not already rendered inline */}
+        {
+          youtube && youtube.length > 0 && !hasInlineVideo && (
+            <section class="video-masterclass-section">
+              <h2>📺 Video Tutorial & Masterclass</h2>
+              <div class="video-grid">
+                {youtube.map((v: { title: string; videoId: string }) => (
+                  <div class="video-card">
+                    <div class="video-player-wrap">
+                      <iframe
+                        src={`https://www.youtube-nocookie.com/embed/${v.videoId}`}
+                        title={v.title}
+                        loading="lazy"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen
+                      ></iframe>
+                    </div>
+                    <div class="video-caption">{v.title}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )
+        }
 
         {
           faq && faq.length > 0 && (
