@@ -259,7 +259,7 @@ function selectUniqueTopic() {
 // ============================================================
 // 2. GEMINI API CLIENT (Retries & Search Grounding)
 // ============================================================
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 3000;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -267,12 +267,11 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function callGemini({ model, prompt, useSearch = false, jsonMode = false }) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
   const body = {
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: {}
+    contents: [{ parts: [{ text: prompt }] }]
   };
 
-  if (jsonMode) {
-    body.generationConfig.responseMimeType = "application/json";
+  if (jsonMode && !useSearch) {
+    body.generationConfig = { responseMimeType: "application/json" };
   }
 
   if (useSearch) {
@@ -339,14 +338,20 @@ function robustJsonParse(text) {
   try {
     return JSON.parse(cleaned);
   } catch (err) {
-    const fixed = cleaned
-      .replace(/[\u0000-\u001F]+/g, (match) => {
-        if (match === "\n") return "\\n";
-        if (match === "\r") return "\\r";
-        if (match === "\t") return "\\t";
-        return "";
-      });
-    return JSON.parse(fixed);
+    try {
+      const sanitized = cleaned
+        .replace(/[\u0000-\u0009\u000B-\u001F]+/g, " ")
+        .replace(/\r\n/g, "\\n")
+        .replace(/\r/g, "\\n");
+      return JSON.parse(sanitized);
+    } catch (err2) {
+      // Return safe fallback object
+      console.warn("JSON parse fallback engaged for raw text response.");
+      return {
+        summary: cleaned,
+        keyTakeaways: ["Trend Evolution", "Styling Techniques", "Suitability Matrix", "Maintenance Guide"]
+      };
+    }
   }
 }
 
@@ -420,43 +425,44 @@ async function generateSingleArticle() {
   console.log(`📂 Category: ${topicItem.category}`);
   console.log(`========================================`);
 
-  // Step 1: Deep Google Grounded Research
+  // Step 1: Deep Google Grounded Research (Note: jsonMode MUST be false when useSearch is true)
   const researchPrompt = `
 You are a senior beauty journalist and SEO specialist.
-Search Google for the top-ranking international articles and salon tutorials about: "${topicItem.topic}".
-Current year: 2026.
+Search Google for top international salon tutorials, stylist guides, and beauty trend reports about: "${topicItem.topic}". Year: 2026.
 
 Synthesize:
 - Detailed breakdown of what makes this trend unique in 2026
 - Specific salon formulas, cutting angles, product ingredients, and tool recommendations
-- Comprehensive face shape matching (oval, square, round, heart) and hair/skin texture analysis
+- Face shape suitability (oval, square, round, heart) and hair/skin texture analysis
 - Step-by-step masterclass technique (at least 5 detailed steps)
 - Common mistakes to avoid and pro stylist secrets
 - Longevity, maintenance schedules, and at-home aftercare
 
-Return ONLY a JSON object:
-{
-  "summary": "Exhaustive research summary",
-  "keyTakeaways": ["Point 1", "Point 2", "Point 3", "Point 4", "Point 5", "Point 6"]
-}
+Output your research as a concise structured summary with key takeaways.
 `;
 
-  const researchText = await callGeminiSafe({ prompt: researchPrompt, useSearch: true, jsonMode: true });
-  const research = robustJsonParse(researchText);
+  let researchSummary = "";
+  try {
+    researchSummary = await callGeminiSafe({ prompt: researchPrompt, useSearch: true, jsonMode: false });
+    console.log(`✅ Grounded Google Research completed.`);
+  } catch (err) {
+    console.warn(`⚠️ Search grounding fallback: ${err.message}`);
+    researchSummary = `Comprehensive 2026 beauty trend overview for ${topicItem.topic}.`;
+  }
 
   // Step 2: Fetch 1 Long, Verified YouTube Tutorial Masterclass
   const videos = await fetchLongYouTubeTutorial(topicItem.searchKey);
   const featuredVideo = videos[0] || null;
+  console.log(`🎬 YouTube video: ${featuredVideo ? featuredVideo.title : "Not found"}`);
 
-  // Step 3: Write 1200+ Word Human-Grade Deep-Dive Editorial
+  // Step 3: Write 1200+ Word Human-Grade Deep-Dive Editorial (jsonMode: true is active here)
   const articlePrompt = `
 You are the Editor-in-Chief of "BeautyTrend Daily", an elite digital beauty magazine.
 Write an exhaustive, authoritative, deeply detailed editorial masterclass guide on: "${topicItem.topic}".
 Current year: 2026.
 
 RESEARCH CONTEXT:
-${research.summary}
-KEY TAKEAWAYS: ${research.keyTakeaways.join("; ")}
+${researchSummary}
 
 CRITICAL EDITORIAL REQUIREMENTS:
 1. WORD COUNT: Write at least 1,200 to 1,500 words of rich, practical, human-quality content. Do NOT skimp or summarize.
@@ -471,6 +477,7 @@ CRITICAL EDITORIAL REQUIREMENTS:
 3. Do NOT repeat the article title or H1 in the content field.
 4. Start directly with an evocative, magazine-style opening paragraph.
 5. Provide 5 detailed, authoritative FAQ entries.
+6. Content must be 100% original, unique, and fully human-grade SEO.
 
 Return ONLY a valid JSON object:
 {
@@ -497,7 +504,7 @@ Return ONLY a valid JSON object:
   const slug = (article.slug || topicItem.topic.toLowerCase().replace(/[^a-z0-9]+/g, "-")).replace(/^-|-$/g, "");
   const filePath = path.join(ARTICLES_DIR, `${slug}.md`);
 
-  let cleanContent = article.content.trim();
+  let cleanContent = String(article.content || "").trim();
   cleanContent = cleanContent.replace(/^#\s+[^\n]+\n+/, "").trim();
 
   // IN-CONTEXT VIDEO INJECTION: Place the video right after the Step-by-Step Masterclass section
@@ -509,7 +516,6 @@ Return ONLY a valid JSON object:
   </div>
 </div>\n\n`;
 
-    // Inject right after Step-by-Step section or before Face Shape section
     const stepMatch = cleanContent.match(/(##\s+Step-by-Step[\s\S]*?)(?=##\s+Face Shape|##\s+Essential Tools|\Z)/i);
     if (stepMatch) {
       cleanContent = cleanContent.replace(stepMatch[1], stepMatch[1] + videoEmbedBlock);
