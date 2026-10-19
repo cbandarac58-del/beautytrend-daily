@@ -3,7 +3,7 @@ title: "2026 Trend Masterclass"
 description: "The complete 2026 trend guide."
 excerpt: "An exhaustive masterclass and styling overview."
 category: "Haircuts"
-keywords: []
+keywords:
   - "beauty trends"
   - "2026 guide"
   - "hair and style"
@@ -11,7 +11,7 @@ publishedAt: "2026-10-08"
 updatedAt: "2026-10-08"
 heroImage: "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=1200&h=675&q=85"
 imageCredit: "Photo by Aw Creative on Unsplash"
-youtube: []
+youtube:
   - title: "How to Cut a Perfect Wolf Cut | 2026 Wolfcut Hair Tutorial | Easy DIY Trend (Step-by-Step)"
     videoId: "mVH6a9_vD5Q"
 faq: []
