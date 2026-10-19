@@ -8,7 +8,7 @@ publishedAt: "2026-10-19"
 updatedAt: "2026-10-19"
 heroImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=675&q=85"
 imageCredit: "Photo by Valerie Elash on Unsplash"
-youtube: []
+youtube:
   - title: "A Dermatologist Compares K18 and Olaplex - Which Works Better?"
     videoId: "RzPygdB256k"
   - title: "K18 Molecular Repair Leave In vs Olaplex No. 3 | Which one is better? | Niara Alexis"
