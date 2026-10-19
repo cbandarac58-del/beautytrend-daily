@@ -3,7 +3,7 @@ title: "2026 Trend Masterclass"
 description: "The complete 2026 trend guide."
 excerpt: "An exhaustive masterclass and styling overview."
 category: "Haircuts"
-keywords: []
+keywords:
   - "beauty trends"
   - "2026 guide"
   - "hair and style"
@@ -11,7 +11,7 @@ publishedAt: "2026-10-08"
 updatedAt: "2026-10-08"
 heroImage: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=1200&h=675&q=85"
 imageCredit: "Photo by Ali Pazani on Unsplash"
-youtube: []
+youtube:
   - title: "French-ish Bob Haircut Story and How I Style It"
     videoId: "72g37SNueI0"
 faq: []
