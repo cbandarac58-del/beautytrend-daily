@@ -3,7 +3,7 @@ title: "Velvet Cat Eye Nails 2026: The Ultimate Editor's Guide to Magnetic Gel M
 description: "Unlock 2026's defining nail trend: Cat Eye Velvet Magnetic Gels. Our expert guide covers techniques, tools, and pro secrets for a captivating 3D shimmer."
 excerpt: "Dive deep into the luxurious world of Cat Eye Velvet Magnetic Gel Nails, the paramount beauty statement of 2026. Discover the artistry behind this soft, multidimensional shimmer and master the techniques for an unparalleled, interactive manicure."
 category: "Nail Art"
-keywords: []
+keywords:
   - "cat eye velvet nails 2026"
   - "magnetic gel nails"
   - "velvet nail trend"
@@ -16,7 +16,7 @@ publishedAt: "2026-10-08"
 updatedAt: "2026-10-08"
 heroImage: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1200&h=675&q=85"
 imageCredit: "Photo by Giorgio Trovato on Unsplash"
-youtube: []
+youtube:
   - title: "how to do cat eye magnetic gel nails at home, step by step tutorial, beginner friendly"
     videoId: "f28J6jfnnE8"
 faq: []
