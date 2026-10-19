@@ -1,5 +1,4 @@
----
-title: "Boho Romantic Braids & Half-Up Hair 2026: The Ultimate Editorial Masterclass"
+---title: "Boho Romantic Braids & Half-Up Hair 2026: The Ultimate Editorial Masterclass"
 description: "Unveil 2026's ethereal boho romantic braids & half-up trends. Master knotless techniques, human hair extensions, and personalized styles for ultimate elegance."
 excerpt: "Dive into the enchanting world of 2026's Boho Romantic Braids and Half-Up hairstyles, where natural luster meets effortless elegance. This masterclass guide reveals the secrets to achieving bespoke, health-conscious looks that dominate the beauty scene."
 category: "Hairstyles"
@@ -12,8 +11,8 @@ keywords:
   - "natural texture hairstyles"
 publishedAt: "2026-10-14"
 updatedAt: "2026-10-14"
-heroImage: "https://images.unsplash.com/photo-1584297091622-af8e5fdcf9ef?auto=format&fit=crop&w=1200&h=675&q=85"
-imageCredit: "Photo by Ayo Ogunseinde on Unsplash"
+heroImage: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85"
+imageCredit: "Photo by Sarah Comeau on Unsplash"
 youtube:
   - title: "How to: Boho Braid"
     videoId: "H8O85P_ehhc"
