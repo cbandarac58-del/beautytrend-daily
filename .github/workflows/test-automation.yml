@@ -1,31 +1,22 @@
-name: BeautyTrend Automation Test
+name: Test Astro Build
 
 on:
   workflow_dispatch:
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check Gemini secret
-        run: |
-          if [ -z "${{ secrets.GEMINI_API_KEY }}" ]; then
-            echo "GEMINI_API_KEY is missing"
-            exit 1
-          fi
-          echo "GEMINI_API_KEY is configured"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-      - name: Check YouTube secret
-        run: |
-          if [ -z "${{ secrets.YOUTUBE_API_KEY }}" ]; then
-            echo "YOUTUBE_API_KEY is missing"
-            exit 1
-          fi
-          echo "YOUTUBE_API_KEY is configured"
+      - name: Install dependencies
+        run: npm install
 
-      - name: Automation test complete
-        run: echo "BeautyTrend automation foundation is ready!"
+      - name: Build Astro site
+        run: npm run build
