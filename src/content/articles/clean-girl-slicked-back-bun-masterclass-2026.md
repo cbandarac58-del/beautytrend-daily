@@ -3,7 +3,7 @@ title: "The Clean Girl 2.0: Your Elite 2026 Masterclass on the Slicked-Back Bun"
 description: "Unlock the secrets to the refined 'Clean Girl 2.0' slicked-back bun for 2026. An authoritative guide on techniques, products, and hair health."
 excerpt: "Welcome to BeautyTrend Daily's definitive guide to mastering the 'Clean Girl Slicked-Back Bun' in its sophisticated 2026 iteration. This isn't just a hairstyle; it's a statement of intentional polish and effortless elegance."
 category: "Hairstyles"
-keywords: []
+keywords:
   - "clean girl bun 2026"
   - "slicked back bun"
   - "hair styling masterclass"
@@ -14,7 +14,7 @@ publishedAt: "2026-10-19"
 updatedAt: "2026-10-19"
 heroImage: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&h=675&q=85"
 imageCredit: "Photo by Tamara Bellis on Unsplash"
-youtube: []
+youtube:
   - title: "‘clean girl’ slick bun tutorial"
     videoId: "44Up1fATOoI"
   - title: "How To Get A PERFECT Slickback Everytime!"
