@@ -3,19 +3,17 @@ title: "Dewy Blush & Luminous Glow Makeup Tutorial 2026"
 description: "Discover Dewy Blush & Luminous Glow Makeup Tutorial 2026 trends for 2026."
 excerpt: ""
 category: "Beauty Trends"
-keywords:
-
+keywords: []
 publishedAt: "2026-10-19"
 updatedAt: "2026-10-19"
 heroImage: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85"
 imageCredit: "Photo by Valerie Elash on Unsplash"
-youtube:
+youtube: []
   - title: "how to do clean girl makeup *for BEGINNERS* | MAKEUP 101"
     videoId: "aJfHui7krnY"
   - title: "how to apply makeup for beginners *IN DEPTH step by step* | MAKEUP 101"
     videoId: "xcyC_5rOIbs"
-faq:
-
+faq: []
 ---
 
 {
