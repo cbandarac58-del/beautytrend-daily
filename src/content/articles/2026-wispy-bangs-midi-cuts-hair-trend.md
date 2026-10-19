@@ -3,7 +3,7 @@ title: "2026 Trend Masterclass"
 description: "The complete 2026 trend guide."
 excerpt: "An exhaustive masterclass and styling overview."
 category: "Haircuts"
-keywords:
+keywords: []
   - "beauty trends"
   - "2026 guide"
   - "hair and style"
@@ -11,11 +11,10 @@ publishedAt: "2026-10-08"
 updatedAt: "2026-10-08"
 heroImage: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=1200&h=675&q=85"
 imageCredit: "Photo by Ali Pazani on Unsplash"
-youtube:
+youtube: []
   - title: "Hairdressers Guide To Cutting Your Own Curtain Bangs"
     videoId: "PMUZFKL0xLQ"
-faq:
-
+faq: []
 ---
 
 {
