@@ -2,17 +2,17 @@ name: Daily 3 Beauty Posts Automation
 
 on:
   schedule:
-    # Runs 3 times a day:
-    # 03:00 UTC (8:30 AM Sri Lanka / Morning Post)
-    # 09:00 UTC (2:30 PM Sri Lanka / Afternoon Post)
-    # 15:00 UTC (8:30 PM Sri Lanka / Evening Post)
+    # Runs 3 times a day (1 post each):
+    # 03:00 UTC (8:30 AM Sri Lanka)
+    # 09:00 UTC (2:30 PM Sri Lanka)
+    # 15:00 UTC (8:30 PM Sri Lanka)
     - cron: '0 3,9,15 * * *'
   workflow_dispatch:
     inputs:
       post_count:
-        description: 'Number of articles to generate (default: 1)'
+        description: 'Number of articles to generate (1-5)'
         required: false
-        default: '1'
+        default: '3'
 
 permissions:
   contents: write
@@ -20,28 +20,27 @@ permissions:
 jobs:
   publish-beauty-posts:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: |
-          npm ci || npm install
+          node-version: '20'
 
       - name: Generate & Publish Article(s)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
-          COUNT="${{ github.event.inputs.post_count || 1 }}"
+          COUNT="${{ github.event.inputs.post_count || '1' }}"
+          echo "Generating $COUNT article(s)..."
           node scripts/publish-daily-post.mjs "$COUNT"
 
       - name: Commit and Push new articles
@@ -50,9 +49,11 @@ jobs:
           git config --global user.email "bot@beautytrend-daily.com"
           git add src/content/articles/
           if git diff --staged --quiet; then
-            echo "No new articles found to commit."
+            echo "No new articles to commit."
           else
-            git commit -m "Auto-publish new beauty trend article(s) [skip ci]"
+            ARTICLE_COUNT=$(git diff --staged --name-only | wc -l)
+            git commit -m "✨ Published $ARTICLE_COUNT new beauty article(s) — $(date +'%Y-%m-%d %H:%M UTC')"
             git pull --rebase origin main
             git push origin main
+            echo "SUCCESS: Pushed $ARTICLE_COUNT new article(s) to repo!"
           fi
