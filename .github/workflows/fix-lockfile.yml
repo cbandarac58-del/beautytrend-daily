@@ -29,15 +29,20 @@ jobs:
           ls -la package-lock.json
           head -5 package-lock.json
 
-      - name: Commit package-lock.json
+      - name: Add .nvmrc and .node-version files
+        run: |
+          echo "20" > .nvmrc
+          echo "20" > .node-version
+
+      - name: Commit all fixes
         run: |
           git config user.name "BeautyTrend Bot"
           git config user.email "bot@beautytrend-daily.com"
-          git add package-lock.json
+          git add package-lock.json .nvmrc .node-version
           if git diff --staged --quiet; then
             echo "No changes"
           else
-            git commit -m "Fix: Add package-lock.json for Cloudflare Pages build"
+            git commit -m "Fix: Add package-lock.json + Node version files for Cloudflare Pages"
             git pull --rebase origin main
             git push origin main
             echo "Pushed!"
