@@ -3,7 +3,7 @@ title: "The '90s Supermodel Blowout Layers: Your 2026 Masterclass to Iconic Volu
 description: "Unlock the secrets to the 2026 '90s Supermodel Blowout. This masterclass guides you through cuts, styling, and care for iconic volume."
 excerpt: "Welcome to the definitive guide on the 2026 '90s Supermodel Blowout, a sophisticated revival of volume and glamour. Discover how to achieve this polished yet touchable look."
 category: "Haircuts"
-keywords: []
+keywords:
   - "90s Supermodel Blowout"
   - "2026 Hair Trends"
   - "Voluminous Haircut"
@@ -14,10 +14,10 @@ publishedAt: "2026-10-08"
 updatedAt: "2026-10-08"
 heroImage: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85"
 imageCredit: "Photo by Sarah Comeau on Unsplash"
-youtube: []
+youtube:
   - title: "How to Do a 90s Blowout | Step by Step Hair Tutorial"
     videoId: "E54Bnqzz9LI"
-faq: []
+faq:
   - question: "What specifically differentiates the 2026 '90s Supermodel Blowout from the original version?"
     answer: "The 2026 iteration is a 'Modern Heritage' evolution focusing on 'Quiet Luxury' and a polished, touchable finish. Key differentiators include softer, seamlessly blended layers that typically start at the jaw or below (unlike the choppier 'Rachel' cut). It emphasizes protected hair density, taking movement from mid-lengths while preserving weight at the perimeter to prevent thin ends. Highlights are visible but blended, not 'stripey,' and the blowout is bouncy and airy, never stiff or 'shellacked.' Crucially, it prioritizes maximum root lift for a distinct 'halo of volume' or 'cloud blowout,' a cornerstone of its updated glamour."
   - question: "What haircut techniques should I ask my stylist for to achieve the 2026 '90s Supermodel Blowout layers?"
