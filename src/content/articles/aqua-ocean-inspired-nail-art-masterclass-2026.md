@@ -8,7 +8,7 @@ publishedAt: "2026-10-19"
 updatedAt: "2026-10-19"
 heroImage: "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=1200&h=675&q=85"
 imageCredit: "Photo on Unsplash (Free Commercial License)"
-youtube: []
+youtube:
   - title: "Aqua Nails [Nail Art Tutorial] Underwater or Mermaid Nails"
     videoId: "yHeLOLIQNIc"
   - title: "Aqua Nails Tutorial: Create Stunning Water-Inspired Nails! 💅🏼💦"
