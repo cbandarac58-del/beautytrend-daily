@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 
 const geminiKey = process.env.GEMINI_API_KEY;
 const youtubeKey = process.env.YOUTUBE_API_KEY;
@@ -12,70 +13,22 @@ const ARTICLES_DIR = "src/content/articles";
 fs.mkdirSync(ARTICLES_DIR, { recursive: true });
 
 // ============================================================
-// 1. EXTENSIVE REGISTRY: 35+ UNIQUE TOPICS WITH DEDICATED REAL HD PHOTOS
+// 1. LARGE TOPIC REGISTRY — 60+ UNIQUE BEAUTY TOPICS
 // ============================================================
 const TOPIC_REGISTRY = [
-  // Haircuts
+  // === HAIRCUTS ===
   {
     topic: "Korean Butterfly Layered Haircut Trends 2026",
     category: "Haircuts",
-    searchKey: "Butterfly haircut tutorial step by step",
+    searchKey: "Butterfly haircut tutorial step by step 2026",
     heroPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Valerie Elash on Unsplash"
   },
   {
-    topic: "French Bob with Airy Curtain Bangs 2026",
-    category: "Haircuts",
-    searchKey: "French bob haircut styling tutorial",
-    heroPhoto: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=1200&h=675&q=85",
-    photoCredit: "Photo by Ali Pazani on Unsplash"
-  },
-  {
-    topic: "Modern Shag Haircut for Naturally Curly Hair 2026",
-    category: "Haircuts",
-    searchKey: "Curly shag haircut styling full tutorial",
-    heroPhoto: "https://images.unsplash.com/photo-1584297091622-af8e5fdcf9ef?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
-    photoCredit: "Photo by Ayo Ogunseinde on Unsplash"
-  },
-  {
-    topic: "Italian Bob Haircut: The Chic Styling Guide 2026",
-    category: "Haircuts",
-    searchKey: "Italian bob styling haircut guide tutorial",
-    heroPhoto: "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&h=675&q=85",
-    photoCredit: "Photo by Aw Creative on Unsplash"
-  },
-  {
-    topic: "Bixie & Soft Pixie Cut Transformations 2026",
-    category: "Haircuts",
-    searchKey: "Pixie bixie haircut tutorial transformation",
-    heroPhoto: "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&h=675&q=85",
-    photoCredit: "Photo by Tamara Bellis on Unsplash"
-  },
-  {
-    topic: "90s Supermodel Blowout Layers Haircut 2026",
-    category: "Haircuts",
-    searchKey: "90s blowout layers haircut round brush tutorial",
-    heroPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=675&q=85",
-    photoCredit: "Photo by Sarah Comeau on Unsplash"
-  },
-  {
-    topic: "Face-Framing Wispy Bangs & Midi Haircuts 2026",
-    category: "Haircuts",
-    searchKey: "Cutting wispy curtain bangs full tutorial",
-    heroPhoto: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
-    photoCredit: "Photo by Ali Pazani on Unsplash"
-  },
-  {
     topic: "The Hush Cut: Soft Korean Feathered Layers 2026",
     category: "Haircuts",
-    searchKey: "Korean hush cut tutorial styling",
+    searchKey: "Korean hush cut tutorial styling feathered layers",
     heroPhoto: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Valerie Elash on Unsplash"
@@ -83,33 +36,73 @@ const TOPIC_REGISTRY = [
   {
     topic: "The Clavicut: Collarbone-Skimming Lob Haircut 2026",
     category: "Haircuts",
-    searchKey: "Clavicut collarbone lob haircut tutorial",
+    searchKey: "Clavicut collarbone lob haircut tutorial styling",
     heroPhoto: "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Tamara Bellis on Unsplash"
   },
-
-  // Hairstyles
   {
-    topic: "Sleek Glass Hair and High-Gloss Styling Guide 2026",
-    category: "Hairstyles",
-    searchKey: "Glass hair styling tutorial glossy straight hair",
-    heroPhoto: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&h=675&q=85",
+    topic: "Modern Shag Haircut for Naturally Curly Hair 2026",
+    category: "Haircuts",
+    searchKey: "Curly shag haircut styling full tutorial 2026",
+    heroPhoto: "https://images.unsplash.com/photo-1584297091622-af8e5fdcf9ef?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Ayo Ogunseinde on Unsplash"
+  },
+  {
+    topic: "Textured Lob with Curtain Bangs: Complete Guide 2026",
+    category: "Haircuts",
+    searchKey: "textured lob curtain bangs haircut tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Ali Pazani on Unsplash"
+  },
+  {
+    topic: "Octopus Haircut: The Layered Volume Trend 2026",
+    category: "Haircuts",
+    searchKey: "Octopus haircut tutorial layers volume styling",
+    heroPhoto: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Reza Mehrad on Unsplash"
+  },
+  {
+    topic: "Asymmetrical Bob: Bold Edge Haircut Guide 2026",
+    category: "Haircuts",
+    searchKey: "Asymmetrical bob haircut tutorial step by step",
+    heroPhoto: "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Aw Creative on Unsplash"
+  },
+  {
+    topic: "Long Layers with Face-Framing Highlights 2026",
+    category: "Haircuts",
+    searchKey: "Long layers face framing highlights haircut tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Tamara Bellis on Unsplash"
   },
   {
-    topic: "Effortless French Girl Messy Bun Tutorials 2026",
-    category: "Hairstyles",
-    searchKey: "French messy bun tutorial step by step easy",
+    topic: "Curtain Bangs Styling Guide for All Hair Types 2026",
+    category: "Haircuts",
+    searchKey: "Curtain bangs styling tutorial all hair types",
+    heroPhoto: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Ali Pazani on Unsplash"
+  },
+  {
+    topic: "The Rachel Cut: 90s Comeback Layers for 2026",
+    category: "Haircuts",
+    searchKey: "Rachel cut 90s layers haircut tutorial modern",
     heroPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Sarah Comeau on Unsplash"
   },
+
+  // === HAIRSTYLES ===
   {
     topic: "Heatless Silk Ribbon Waves & Overnight Styling 2026",
     category: "Hairstyles",
-    searchKey: "Heatless curls robe belt tutorial overnight",
+    searchKey: "Heatless curls robe belt tutorial overnight waves",
     heroPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Valerie Elash on Unsplash"
@@ -117,71 +110,95 @@ const TOPIC_REGISTRY = [
   {
     topic: "Clean Girl Slicked-Back Bun Styling Routine 2026",
     category: "Hairstyles",
-    searchKey: "Clean girl slick back sleek bun tutorial",
+    searchKey: "Clean girl slick back sleek bun tutorial styling",
     heroPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Tamara Bellis on Unsplash"
   },
   {
-    topic: "Boho Romantic Braids & Half-Up Hair Trends 2026",
+    topic: "The Barrel Wave Blowout: Retro Glam Tutorial 2026",
     category: "Hairstyles",
-    searchKey: "Boho braids half up tutorial romantic",
+    searchKey: "Barrel wave blowout retro glam hair tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Tamara Bellis on Unsplash"
+  },
+  {
+    topic: "Braided Updo Masterclass for Weddings & Events 2026",
+    category: "Hairstyles",
+    searchKey: "Braided updo wedding tutorial step by step",
     heroPhoto: "https://images.unsplash.com/photo-1584297091622-af8e5fdcf9ef?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Ayo Ogunseinde on Unsplash"
   },
-
-  // Hair Colors
   {
-    topic: "Espresso Brunette & Cherry Cola Hair Colors 2026",
-    category: "Hair Color",
-    searchKey: "Cherry cola brunette hair color transformation tutorial",
-    heroPhoto: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&h=675&q=85",
-    photoCredit: "Photo by Valerie Elash on Unsplash"
+    topic: "Coquette Hair Bows & Ribbon Styling Trends 2026",
+    category: "Hairstyles",
+    searchKey: "Coquette hair bow ribbon styling tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Reza Mehrad on Unsplash"
   },
+  {
+    topic: "Mermaid Waves: Long Hair Styling Masterclass 2026",
+    category: "Hairstyles",
+    searchKey: "Mermaid waves long hair tutorial curling iron",
+    heroPhoto: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Guilherme Petri on Unsplash"
+  },
+
+  // === HAIR COLOR ===
   {
     topic: "Honey Vanilla & Buttercream Blonde Balayage 2026",
     category: "Hair Color",
-    searchKey: "Honey blonde balayage transformation masterclass",
+    searchKey: "Honey blonde balayage transformation masterclass tutorial",
     heroPhoto: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Guilherme Petri on Unsplash"
   },
   {
-    topic: "Mushroom Brown Soft Dimension Hair Color 2026",
-    category: "Hair Color",
-    searchKey: "Mushroom brown hair color formula tutorial",
-    heroPhoto: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=1200&h=675&q=85",
-    photoCredit: "Photo by Aw Creative on Unsplash"
-  },
-  {
     topic: "Warm Copper & Peach Fuzz Hair Color Trends 2026",
     category: "Hair Color",
-    searchKey: "Copper hair color dying tutorial formula",
+    searchKey: "Copper peach hair color dying tutorial formula 2026",
     heroPhoto: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Valerie Elash on Unsplash"
   },
+  {
+    topic: "Strawberry Blonde: The Dreamy Color Formula 2026",
+    category: "Hair Color",
+    searchKey: "Strawberry blonde hair color formula tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Aw Creative on Unsplash"
+  },
+  {
+    topic: "Brunette Money Piece Highlights: Face Framing 2026",
+    category: "Hair Color",
+    searchKey: "Money piece highlights brunette face framing tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Valerie Elash on Unsplash"
+  },
+  {
+    topic: "Jet Black & Midnight Hair Color Trend Guide 2026",
+    category: "Hair Color",
+    searchKey: "Jet black midnight hair color tutorial shiny",
+    heroPhoto: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Reza Mehrad on Unsplash"
+  },
+  {
+    topic: "Dimensional Brunette Gloss & Toning Guide 2026",
+    category: "Hair Color",
+    searchKey: "Brunette gloss toning hair color tutorial salon",
+    heroPhoto: "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Tamara Bellis on Unsplash"
+  },
 
-  // Nail Art & Manicures
-  {
-    topic: "Cat Eye Velvet Magnetic Gel Nail Trends 2026",
-    category: "Nail Art",
-    searchKey: "Cat eye velvet magnetic nails tutorial full guide",
-    heroPhoto: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&h=675&q=85",
-    photoCredit: "Photo by Giorgio Trovato on Unsplash"
-  },
-  {
-    topic: "Micro French Tip Elegant Manicure Designs 2026",
-    category: "Nail Art",
-    searchKey: "Micro french tip manicure tutorial step by step",
-    heroPhoto: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1200&h=675&q=85",
-    photoCredit: "Photo by Element5 Digital on Unsplash"
-  },
+  // === NAIL ART ===
   {
     topic: "Glazed Donut Chrome Nails Style Guide 2026",
     category: "Nail Art",
@@ -191,22 +208,6 @@ const TOPIC_REGISTRY = [
     photoCredit: "Photo by Giorgio Trovato on Unsplash"
   },
   {
-    topic: "Minimalist 3D Floral & Aura Nail Art 2026",
-    category: "Nail Art",
-    searchKey: "3D nail art floral design tutorial masterclass",
-    heroPhoto: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1200&h=675&q=85",
-    photoCredit: "Photo by Element5 Digital on Unsplash"
-  },
-  {
-    topic: "Gel-X Nail Extensions Care & Trendy Shapes 2026",
-    category: "Nail Styles",
-    searchKey: "Gel X nail extension tutorial application step by step",
-    heroPhoto: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&h=675&q=85",
-    photoCredit: "Photo on Unsplash (Free Commercial License)"
-  },
-  {
     topic: "Milky Soap Nails: The Clean Minimalist Look 2026",
     category: "Nail Styles",
     searchKey: "Soap nails milky manicure clean girl tutorial",
@@ -214,8 +215,40 @@ const TOPIC_REGISTRY = [
     detailPhoto: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo on Unsplash (Free Commercial License)"
   },
+  {
+    topic: "Nail Stamping & Foil Art Techniques 2026",
+    category: "Nail Art",
+    searchKey: "Nail stamping foil art technique tutorial step by step",
+    heroPhoto: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo on Unsplash (Free Commercial License)"
+  },
+  {
+    topic: "Jelly Nails & Translucent Gel Manicure 2026",
+    category: "Nail Art",
+    searchKey: "Jelly nails translucent gel manicure tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Element5 Digital on Unsplash"
+  },
+  {
+    topic: "Negative Space Geometric Nail Art Designs 2026",
+    category: "Nail Art",
+    searchKey: "Negative space geometric nail art tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Giorgio Trovato on Unsplash"
+  },
+  {
+    topic: "Aqua & Ocean-Inspired Nail Art Masterclass 2026",
+    category: "Nail Art",
+    searchKey: "Ocean aqua nail art tutorial step by step",
+    heroPhoto: "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo on Unsplash (Free Commercial License)"
+  },
 
-  // Beauty & Skincare Trends
+  // === MAKEUP & BEAUTY ===
   {
     topic: "Glass Skin Barrier Repair Skincare Routine 2026",
     category: "Beauty Trends",
@@ -225,43 +258,238 @@ const TOPIC_REGISTRY = [
     photoCredit: "Photo by Raphael Lovaski on Unsplash"
   },
   {
-    topic: "Natural Latte Makeup & Monochromatic Glam 2026",
-    category: "Beauty Trends",
-    searchKey: "Latte makeup full tutorial step by step",
-    heroPhoto: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&h=675&q=85",
-    photoCredit: "Photo by Valerie Elash on Unsplash"
-  },
-  {
     topic: "Fluffy Feathered Brows & Clean Beauty Guide 2026",
     category: "Beauty Trends",
-    searchKey: "Fluffy laminated brows tutorial masterclass",
+    searchKey: "Fluffy laminated brows tutorial masterclass 2026",
     heroPhoto: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Tamara Bellis on Unsplash"
+  },
+  {
+    topic: "Dewy Blush & Luminous Glow Makeup Tutorial 2026",
+    category: "Beauty Trends",
+    searchKey: "Dewy skin blush glow makeup tutorial step by step",
+    heroPhoto: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Valerie Elash on Unsplash"
+  },
+  {
+    topic: "Smoky Eye Mastery: Classic to Modern 2026",
+    category: "Beauty Trends",
+    searchKey: "Smoky eye makeup tutorial step by step beginner",
+    heroPhoto: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Tamara Bellis on Unsplash"
+  },
+  {
+    topic: "Skin Tint & Tinted Moisturizer: No-Makeup Look 2026",
+    category: "Beauty Trends",
+    searchKey: "Skin tint no makeup look tutorial natural finish",
+    heroPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Raphael Lovaski on Unsplash"
+  },
+  {
+    topic: "Cherry Red Lip Trend: Classic & Modern Formulas 2026",
+    category: "Beauty Trends",
+    searchKey: "Cherry red lip tutorial classic bold makeup",
+    heroPhoto: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Tamara Bellis on Unsplash"
+  },
+  {
+    topic: "Contour & Sculpt: Full Face Tutorial 2026",
+    category: "Beauty Trends",
+    searchKey: "Contouring sculpting face makeup tutorial full",
+    heroPhoto: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Valerie Elash on Unsplash"
+  },
+  {
+    topic: "Sunscreen & SPF Skincare Routine for 2026",
+    category: "Beauty Trends",
+    searchKey: "Sunscreen skincare routine SPF daytime guide tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Raphael Lovaski on Unsplash"
+  },
+  {
+    topic: "Eyelash Extension Styles & Aftercare Guide 2026",
+    category: "Beauty Trends",
+    searchKey: "Eyelash extensions styles aftercare tutorial guide",
+    heroPhoto: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Tamara Bellis on Unsplash"
+  },
+  {
+    topic: "Retinol & Vitamin C Skincare Layering Guide 2026",
+    category: "Beauty Trends",
+    searchKey: "Retinol vitamin C skincare layering guide tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Raphael Lovaski on Unsplash"
+  },
+  {
+    topic: "Blush Draping Technique: Editorial Makeup 2026",
+    category: "Beauty Trends",
+    searchKey: "Blush draping editorial makeup technique tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Valerie Elash on Unsplash"
+  },
+  {
+    topic: "Laminated Brow Soap Styling Tutorial 2026",
+    category: "Beauty Trends",
+    searchKey: "Soap brow lamination tutorial at home styling",
+    heroPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Tamara Bellis on Unsplash"
+  },
+
+  // === HAIR CARE ===
+  {
+    topic: "Protein Treatment & Bond Repair for Damaged Hair 2026",
+    category: "Hair Care",
+    searchKey: "Protein treatment bond repair damaged hair tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Valerie Elash on Unsplash"
+  },
+  {
+    topic: "Scalp Care & Hair Growth Routine 2026",
+    category: "Hair Care",
+    searchKey: "Scalp care hair growth routine tutorial massage",
+    heroPhoto: "https://images.unsplash.com/photo-1505502416-9de2f1eef3bc?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo on Unsplash (Free Commercial License)"
+  },
+  {
+    topic: "Olaplex vs K18: Hair Repair Treatment Comparison 2026",
+    category: "Hair Care",
+    searchKey: "Olaplex K18 hair repair bond treatment comparison",
+    heroPhoto: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Valerie Elash on Unsplash"
+  },
+  {
+    topic: "Curly Girl Method: Defining Curls for 2026",
+    category: "Hair Care",
+    searchKey: "Curly girl method curl definition tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1584297091622-af8e5fdcf9ef?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Ayo Ogunseinde on Unsplash"
+  },
+  {
+    topic: "Hair Oiling Rituals: Ayurvedic Beauty Guide 2026",
+    category: "Hair Care",
+    searchKey: "Hair oiling Ayurvedic ritual tutorial scalp massage",
+    heroPhoto: "https://images.unsplash.com/photo-1505502416-9de2f1eef3bc?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo on Unsplash (Free Commercial License)"
+  },
+
+  // === NAIL CARE ===
+  {
+    topic: "At-Home Gel Manicure: Complete Beginner Guide 2026",
+    category: "Nail Styles",
+    searchKey: "At home gel manicure tutorial step by step beginner",
+    heroPhoto: "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo on Unsplash (Free Commercial License)"
+  },
+  {
+    topic: "Nail Strengthening & Cuticle Care Routine 2026",
+    category: "Nail Styles",
+    searchKey: "Nail strengthening cuticle care routine tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Element5 Digital on Unsplash"
+  },
+  {
+    topic: "Press-On Nails: Pro Application & Design 2026",
+    category: "Nail Styles",
+    searchKey: "Press on nails application professional tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Giorgio Trovato on Unsplash"
+  },
+  {
+    topic: "Acrylic vs Dip Powder Nails: Full Comparison 2026",
+    category: "Nail Styles",
+    searchKey: "Acrylic vs dip powder nails comparison tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo on Unsplash (Free Commercial License)"
+  },
+
+  // === WELLNESS & LIFESTYLE ===
+  {
+    topic: "Gua Sha & Facial Massage: Anti-Aging Ritual 2026",
+    category: "Beauty Trends",
+    searchKey: "Gua sha facial massage anti aging tutorial ritual",
+    heroPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Raphael Lovaski on Unsplash"
+  },
+  {
+    topic: "Facial Yoga & Lymphatic Drainage Techniques 2026",
+    category: "Beauty Trends",
+    searchKey: "Facial yoga lymphatic drainage technique tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Valerie Elash on Unsplash"
+  },
+  {
+    topic: "Hyaluronic Acid Serum Guide for All Skin Types 2026",
+    category: "Beauty Trends",
+    searchKey: "Hyaluronic acid serum tutorial all skin types guide",
+    heroPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Raphael Lovaski on Unsplash"
+  },
+  {
+    topic: "Night Skin Routine: Repair & Regeneration 2026",
+    category: "Beauty Trends",
+    searchKey: "Night skin routine repair regeneration tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Raphael Lovaski on Unsplash"
   }
 ];
 
+// ============================================================
+// 2. SMART TOPIC SELECTION — Avoids duplicates across registry
+// ============================================================
 function selectUniqueTopic() {
-  const existingFiles = fs.readdirSync(ARTICLES_DIR).map((f) => f.toLowerCase());
+  const existingFiles = fs.existsSync(ARTICLES_DIR)
+    ? fs.readdirSync(ARTICLES_DIR).map((f) => f.toLowerCase().replace(/\.md$/, ""))
+    : [];
+
   const available = TOPIC_REGISTRY.filter((item) => {
-    const slug = item.topic
+    const topicSlug = item.topic
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
-    return !existingFiles.some((f) => f.includes(slug));
+    // Check if any existing file contains a significant overlap
+    return !existingFiles.some((f) => {
+      const words = topicSlug.split("-").filter((w) => w.length > 4);
+      const matchCount = words.filter((w) => f.includes(w)).length;
+      return matchCount >= 2; // Only skip if 2+ significant words match
+    });
   });
 
   const pool = available.length > 0 ? available : TOPIC_REGISTRY;
-  return pool[Math.floor(Math.random() * pool.length)];
+  // Use crypto for better randomness
+  const randomIndex = crypto.randomInt(pool.length);
+  return pool[randomIndex];
 }
 
 // ============================================================
-// 2. GEMINI API CLIENT (Retries & Search Grounding)
+// 3. GEMINI API CLIENT (Retries + Fallbacks)
 // ============================================================
 const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 3000;
+const RETRY_DELAY_MS = 5000;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function callGemini({ model, prompt, useSearch = false, jsonMode = false }) {
@@ -270,12 +498,18 @@ async function callGemini({ model, prompt, useSearch = false, jsonMode = false }
     contents: [{ parts: [{ text: prompt }] }]
   };
 
+  // NOTE: jsonMode and useSearch are mutually exclusive
   if (jsonMode && !useSearch) {
-    body.generationConfig = { responseMimeType: "application/json" };
+    body.generationConfig = {
+      responseMimeType: "application/json",
+      temperature: 0.7,
+      maxOutputTokens: 8192
+    };
   }
 
   if (useSearch) {
     body.tools = [{ google_search: {} }];
+    body.generationConfig = { temperature: 0.3 };
   }
 
   const response = await fetch(url, {
@@ -284,7 +518,8 @@ async function callGemini({ model, prompt, useSearch = false, jsonMode = false }
       "Content-Type": "application/json",
       "x-goog-api-key": geminiKey
     },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(120000) // 2 minute timeout
   });
 
   const text = await response.text();
@@ -310,16 +545,16 @@ async function callGeminiSafe({ prompt, useSearch = false, jsonMode = false }) {
   for (const model of GEMINI_MODELS) {
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        console.log(`[Gemini] Model ${model} - Attempt ${attempt}/${MAX_RETRIES}`);
+        console.log(`[Gemini] Trying model: ${model} | Attempt ${attempt}/${MAX_RETRIES}`);
         return await callGemini({ model, prompt, useSearch, jsonMode });
       } catch (err) {
         lastError = err;
-        console.warn(`[Gemini] Attempt failed (${model}): ${err.message}`);
+        console.warn(`[Gemini] ⚠️ Failed (${model}, attempt ${attempt}): ${err.message}`);
         if (attempt < MAX_RETRIES) await sleep(RETRY_DELAY_MS);
       }
     }
   }
-  throw new Error(`All Gemini models failed. Last error: ${lastError?.message}`);
+  throw new Error(`❌ All Gemini models failed. Last error: ${lastError?.message}`);
 }
 
 function cleanJson(text) {
@@ -345,39 +580,42 @@ function robustJsonParse(text) {
         .replace(/\r/g, "\\n");
       return JSON.parse(sanitized);
     } catch (err2) {
-      // Return safe fallback object
-      console.warn("JSON parse fallback engaged for raw text response.");
+      console.warn("⚠️ JSON parse fallback — using raw content.");
       return {
-        summary: cleaned,
-        keyTakeaways: ["Trend Evolution", "Styling Techniques", "Suitability Matrix", "Maintenance Guide"]
+        title: "",
+        slug: "",
+        description: "",
+        excerpt: "",
+        keywords: [],
+        content: cleaned,
+        faq: []
       };
     }
   }
 }
 
 // ============================================================
-// 3. FETCH LONG, HIGH-VALUE YOUTUBE MASTERCLASSES
+// 4. YOUTUBE TUTORIAL FETCHER
 // ============================================================
-async function fetchLongYouTubeTutorial(searchKey) {
+async function fetchYouTubeTutorial(searchKey) {
   if (!youtubeKey) {
-    console.log("[YouTube] No YOUTUBE_API_KEY found. Skipping video search.");
+    console.log("[YouTube] No YOUTUBE_API_KEY. Skipping.");
     return [];
   }
 
   try {
-    const query = `${searchKey}`;
     const url = new URL("https://www.googleapis.com/youtube/v3/search");
     url.searchParams.set("part", "snippet");
-    url.searchParams.set("q", query);
+    url.searchParams.set("q", searchKey);
     url.searchParams.set("type", "video");
-    url.searchParams.set("videoDuration", "medium"); // 4 to 20 minute in-depth tutorials
-    url.searchParams.set("maxResults", "1");
+    url.searchParams.set("videoDuration", "medium");
+    url.searchParams.set("maxResults", "2");
     url.searchParams.set("order", "relevance");
     url.searchParams.set("videoEmbeddable", "true");
     url.searchParams.set("safeSearch", "strict");
     url.searchParams.set("key", youtubeKey);
 
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!res.ok) {
       console.warn(`[YouTube] Status ${res.status}. Continuing without videos.`);
       return [];
@@ -387,27 +625,29 @@ async function fetchLongYouTubeTutorial(searchKey) {
     let videos = (data.items || [])
       .filter((item) => item?.id?.videoId)
       .map((item) => ({
-        title: item.snippet.title.replace(/&#39;/g, "'").replace(/&quot;/g, '"'),
+        title: item.snippet.title.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&'),
         videoId: item.id.videoId,
         channel: item.snippet.channelTitle
       }));
 
-    // Fallback if medium filter returned 0
+    // Fallback: try without duration filter
     if (videos.length === 0) {
       url.searchParams.delete("videoDuration");
-      const fallbackRes = await fetch(url);
+      url.searchParams.set("maxResults", "1");
+      const fallbackRes = await fetch(url, { signal: AbortSignal.timeout(10000) });
       if (fallbackRes.ok) {
         const fbData = await fallbackRes.json();
         videos = (fbData.items || [])
           .filter((item) => item?.id?.videoId)
           .map((item) => ({
-            title: item.snippet.title.replace(/&#39;/g, "'").replace(/&quot;/g, '"'),
+            title: item.snippet.title.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&'),
             videoId: item.id.videoId,
             channel: item.snippet.channelTitle
           }));
       }
     }
 
+    console.log(`[YouTube] Found ${videos.length} video(s)`);
     return videos;
   } catch (err) {
     console.warn(`[YouTube] Error: ${err.message}`);
@@ -416,86 +656,81 @@ async function fetchLongYouTubeTutorial(searchKey) {
 }
 
 // ============================================================
-// 4. 1200+ WORD EXHAUSTIVE DEEP-DIVE EDITORIAL ARTICLE GENERATION
+// 5. GENERATE ONE COMPLETE ARTICLE
 // ============================================================
 async function generateSingleArticle() {
   const topicItem = selectUniqueTopic();
-  console.log(`\n========================================`);
-  console.log(`🚀 Topic: ${topicItem.topic}`);
+  console.log(`\n${"=".repeat(50)}`);
+  console.log(`📌 Topic: ${topicItem.topic}`);
   console.log(`📂 Category: ${topicItem.category}`);
-  console.log(`========================================`);
+  console.log(`${"=".repeat(50)}`);
 
-  // Step 1: Deep Google Grounded Research (Note: jsonMode MUST be false when useSearch is true)
-  const researchPrompt = `
-You are a senior beauty journalist and SEO specialist.
-Search Google for top international salon tutorials, stylist guides, and beauty trend reports about: "${topicItem.topic}". Year: 2026.
+  // STEP 1: Research (Google grounded)
+  const researchPrompt = `You are a senior beauty journalist and SEO specialist.
+Research and synthesize top insights about: "${topicItem.topic}" for 2026.
 
-Synthesize:
-- Detailed breakdown of what makes this trend unique in 2026
-- Specific salon formulas, cutting angles, product ingredients, and tool recommendations
-- Face shape suitability (oval, square, round, heart) and hair/skin texture analysis
-- Step-by-step masterclass technique (at least 5 detailed steps)
-- Common mistakes to avoid and pro stylist secrets
-- Longevity, maintenance schedules, and at-home aftercare
+Provide a detailed structured summary covering:
+- What makes this trend unique and dominant in 2026 (runway, social media, salon)
+- Specific techniques, formulas, cutting angles, or product ingredients
+- Face shape and hair/skin type suitability analysis
+- Step-by-step technique breakdown (minimum 5 detailed steps)
+- Professional secrets and common mistakes to avoid
+- Maintenance schedule and at-home aftercare
 
-Output your research as a concise structured summary with key takeaways.
-`;
+Be specific, authoritative, and detailed. Focus on practical expert-level content.`;
 
   let researchSummary = "";
   try {
     researchSummary = await callGeminiSafe({ prompt: researchPrompt, useSearch: true, jsonMode: false });
-    console.log(`✅ Grounded Google Research completed.`);
+    console.log(`✅ Research completed (${researchSummary.split(" ").length} words)`);
   } catch (err) {
-    console.warn(`⚠️ Search grounding fallback: ${err.message}`);
-    researchSummary = `Comprehensive 2026 beauty trend overview for ${topicItem.topic}.`;
+    console.warn(`⚠️ Research failed: ${err.message}. Using fallback.`);
+    researchSummary = `Comprehensive 2026 beauty expert insights for: ${topicItem.topic}.`;
   }
 
-  // Step 2: Fetch 1 Long, Verified YouTube Tutorial Masterclass
-  const videos = await fetchLongYouTubeTutorial(topicItem.searchKey);
+  // STEP 2: YouTube videos
+  const videos = await fetchYouTubeTutorial(topicItem.searchKey);
   const featuredVideo = videos[0] || null;
-  console.log(`🎬 YouTube video: ${featuredVideo ? featuredVideo.title : "Not found"}`);
+  console.log(`🎬 Video: ${featuredVideo ? featuredVideo.title : "None found"}`);
 
-  // Step 3: Write 1200+ Word Human-Grade Deep-Dive Editorial (jsonMode: true is active here)
-  const articlePrompt = `
-You are the Editor-in-Chief of "BeautyTrend Daily", an elite digital beauty magazine.
-Write an exhaustive, authoritative, deeply detailed editorial masterclass guide on: "${topicItem.topic}".
-Current year: 2026.
+  // STEP 3: Write the full article
+  const articlePrompt = `You are the Editor-in-Chief of "BeautyTrend Daily" — an elite beauty magazine.
+Write a COMPREHENSIVE, authoritative editorial masterclass on: "${topicItem.topic}" (2026).
 
-RESEARCH CONTEXT:
+RESEARCH CONTEXT TO USE:
 ${researchSummary}
 
-CRITICAL EDITORIAL REQUIREMENTS:
-1. WORD COUNT: Write at least 1,200 to 1,500 words of rich, practical, human-quality content. Do NOT skimp or summarize.
-2. STRUCTURE (Strictly use these deep H2 and H3 sections):
-   - ## The 2026 Trend Evolution & Aesthetic Allure (Deep context, why it dominates runways/social media)
-   - ## Anatomy & Key Characteristics (Detailed breakdown of cuts/formulas/shapes)
-   - ## Step-by-Step Styling & Application Masterclass (5+ thorough, actionable steps with product tips)
-   - ## Face Shape & Texture Suitability Matrix (Specific advice for Round, Oval, Square, Heart faces & Fine/Thick textures)
-   - ## Essential Tools & Product Recommendations (Specific formulas, serums, sprays, tools)
-   - ## Salon Consultation Guide: What to Ask Your Stylist (Exact wording, reference advice)
-   - ## Longevity, At-Home Aftercare & Maintenance Routine (Daily and weekly regimen)
-3. Do NOT repeat the article title or H1 in the content field.
-4. Start directly with an evocative, magazine-style opening paragraph.
-5. Provide 5 detailed, authoritative FAQ entries.
-6. Content must be 100% original, unique, and fully human-grade SEO.
+STRICT REQUIREMENTS:
+1. WORD COUNT: Minimum 1,300 words of rich, detailed, human-quality prose. NO shortcuts.
+2. USE THESE EXACT H2 SECTIONS in this order:
+   - ## The 2026 Trend Evolution & Aesthetic Allure
+   - ## Anatomy & Key Characteristics
+   - ## Step-by-Step Styling Masterclass
+   - ## Face Shape & Hair Texture Suitability
+   - ## Essential Tools & Product Recommendations
+   - ## Salon Consultation: What to Tell Your Stylist
+   - ## At-Home Maintenance & Longevity Routine
+3. Do NOT include the article title as H1 inside the content field
+4. Start content with an engaging 2-sentence magazine intro paragraph
+5. Write 5 detailed FAQ entries relevant to the topic
+6. Content must be 100% unique, SEO-optimized, and Google-friendly
 
-Return ONLY a valid JSON object:
+RETURN ONLY THIS EXACT JSON (no other text before or after):
 {
-  "title": "Compelling High-CTR SEO Headline for 2026",
-  "slug": "url-friendly-slug-2026",
-  "description": "Engaging meta description under 160 characters",
-  "excerpt": "Compelling 2-sentence teaser for previews",
-  "keywords": ["keyword 1", "keyword 2", "keyword 3", "keyword 4", "keyword 5", "keyword 6"],
-  "content": "Full 1200+ word markdown content starting directly with the intro paragraph...",
+  "title": "High-CTR SEO headline for this topic (2026)",
+  "slug": "url-friendly-hyphenated-slug",
+  "description": "Compelling meta description under 160 characters",
+  "excerpt": "Two-sentence engaging preview teaser",
+  "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5", "keyword6"],
+  "content": "Full 1300+ word markdown content starting with opening paragraph (NO H1 title)...",
   "faq": [
-    { "question": "Question 1?", "answer": "In-depth answer 1..." },
-    { "question": "Question 2?", "answer": "In-depth answer 2..." },
-    { "question": "Question 3?", "answer": "In-depth answer 3..." },
-    { "question": "Question 4?", "answer": "In-depth answer 4..." },
-    { "question": "Question 5?", "answer": "In-depth answer 5..." }
+    {"question": "FAQ Question 1?", "answer": "Detailed answer 1..."},
+    {"question": "FAQ Question 2?", "answer": "Detailed answer 2..."},
+    {"question": "FAQ Question 3?", "answer": "Detailed answer 3..."},
+    {"question": "FAQ Question 4?", "answer": "Detailed answer 4..."},
+    {"question": "FAQ Question 5?", "answer": "Detailed answer 5..."}
   ]
-}
-`;
+}`;
 
   const articleText = await callGeminiSafe({ prompt: articlePrompt, useSearch: false, jsonMode: true });
   const article = robustJsonParse(articleText);
@@ -504,89 +739,124 @@ Return ONLY a valid JSON object:
   const slug = (article.slug || topicItem.topic.toLowerCase().replace(/[^a-z0-9]+/g, "-")).replace(/^-|-$/g, "");
   const filePath = path.join(ARTICLES_DIR, `${slug}.md`);
 
+  // Clean content — remove accidental H1 at top
   let cleanContent = String(article.content || "").trim();
-  cleanContent = cleanContent.replace(/^#\s+[^\n]+\n+/, "").trim();
+  cleanContent = cleanContent.replace(/^#+\s+[^\n]+\n+/, "").trim();
 
-  // IN-CONTEXT VIDEO INJECTION: Place the video right after the Step-by-Step Masterclass section
+  // INJECT VIDEO after Step-by-Step section
   if (featuredVideo) {
-    const videoEmbedBlock = `\n\n<div class="in-article-video">
-  <div class="video-label">📺 Masterclass Video Tutorial: ${featuredVideo.title}</div>
+    const videoBlock = `\n\n<div class="in-article-video">
+  <div class="video-label">📺 Watch: ${featuredVideo.title}</div>
   <div class="video-responsive-frame">
     <iframe src="https://www.youtube-nocookie.com/embed/${featuredVideo.videoId}" title="${featuredVideo.title}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
   </div>
 </div>\n\n`;
 
-    const stepMatch = cleanContent.match(/(##\s+Step-by-Step[\s\S]*?)(?=##\s+Face Shape|##\s+Essential Tools|\Z)/i);
+    const stepMatch = cleanContent.match(/(## Step-by-Step[\s\S]*?)(?=## Face Shape|## Essential Tools|$)/i);
     if (stepMatch) {
-      cleanContent = cleanContent.replace(stepMatch[1], stepMatch[1] + videoEmbedBlock);
+      cleanContent = cleanContent.replace(stepMatch[1], stepMatch[1] + videoBlock);
     } else {
-      cleanContent += videoEmbedBlock;
+      cleanContent += videoBlock;
     }
   }
 
-  // IN-CONTEXT PHOTO INJECTION: Place secondary visual guide in the Face Shape / Salon Guide section
+  // INJECT secondary photo after Face Shape section
   if (topicItem.detailPhoto) {
-    const detailImageBlock = `\n\n<figure class="in-article-figure">
-  <img src="${topicItem.detailPhoto}" alt="${article.title} Visual Guide" class="in-article-img" loading="lazy" />
+    const photoBlock = `\n\n<figure class="in-article-figure">
+  <img src="${topicItem.detailPhoto}" alt="${article.title || topicItem.topic} Visual Guide" class="in-article-img" loading="lazy" />
   <figcaption class="in-article-caption">Visual Inspiration: ${topicItem.topic} — ${topicItem.photoCredit}</figcaption>
 </figure>\n\n`;
 
-    const faceShapeMatch = cleanContent.match(/(##\s+Face Shape[\s\S]*?)(?=##\s+Essential Tools|##\s+Salon Consultation|\Z)/i);
-    if (faceShapeMatch) {
-      cleanContent = cleanContent.replace(faceShapeMatch[1], faceShapeMatch[1] + detailImageBlock);
+    const faceMatch = cleanContent.match(/(## Face Shape[\s\S]*?)(?=## Essential Tools|## Salon|$)/i);
+    if (faceMatch) {
+      cleanContent = cleanContent.replace(faceMatch[1], faceMatch[1] + photoBlock);
     } else {
-      cleanContent = detailImageBlock + cleanContent;
+      cleanContent = photoBlock + cleanContent;
     }
   }
 
-  // Count words to log quality
-  const wordCount = cleanContent.split(/\s+/).length;
-  console.log(`📊 Generated Article Word Count: ${wordCount} words (Target: 1200+)`);
+  const wordCount = cleanContent.split(/\s+/).filter(w => w.length > 0).length;
+  console.log(`📊 Word Count: ${wordCount} words (Target: 1300+)`);
 
-  // Astro Content Schema Frontmatter
+  // Build frontmatter
+  const safeTitle = JSON.stringify(article.title || topicItem.topic);
+  const safeDesc = JSON.stringify(article.description || `Discover ${topicItem.topic} trends for 2026.`);
+  const safeExcerpt = JSON.stringify(article.excerpt || article.description || "");
+  const safeCategory = JSON.stringify(topicItem.category);
+  const keywordsYaml = (article.keywords || []).map((k) => `  - ${JSON.stringify(k)}`).join("\n");
+  const youtubeYaml = videos.length > 0
+    ? videos.map((v) => `  - title: ${JSON.stringify(v.title)}\n    videoId: ${JSON.stringify(v.videoId)}`).join("\n")
+    : "  - []";
+  const faqYaml = (article.faq || [])
+    .map((f) => `  - question: ${JSON.stringify(f.question)}\n    answer: ${JSON.stringify(f.answer)}`)
+    .join("\n");
+
   const frontmatter = `---
-title: ${JSON.stringify(article.title)}
-description: ${JSON.stringify(article.description)}
-excerpt: ${JSON.stringify(article.excerpt || article.description)}
-category: ${JSON.stringify(topicItem.category)}
+title: ${safeTitle}
+description: ${safeDesc}
+excerpt: ${safeExcerpt}
+category: ${safeCategory}
 keywords:
-${(article.keywords || []).map((k) => `  - ${JSON.stringify(k)}`).join("\n")}
+${keywordsYaml}
 publishedAt: "${now}"
 updatedAt: "${now}"
 heroImage: ${JSON.stringify(topicItem.heroPhoto)}
 imageCredit: ${JSON.stringify(topicItem.photoCredit)}
 youtube:
-${videos.length > 0 ? videos.map((v) => `  - title: ${JSON.stringify(v.title)}\n    videoId: ${JSON.stringify(v.videoId)}`).join("\n") : "  []"}
+${youtubeYaml}
 faq:
-${(article.faq || []).map((f) => `  - question: ${JSON.stringify(f.question)}\n    answer: ${JSON.stringify(f.answer)}`).join("\n")}
+${faqYaml}
 ---
 
 ${cleanContent}
 `;
 
   fs.writeFileSync(filePath, frontmatter, "utf8");
-  console.log(`✅ [Success] Generated & Saved: ${filePath} (${wordCount} words)`);
+  console.log(`✅ Saved: ${filePath} (${wordCount} words)`);
+  return { slug, wordCount, title: article.title };
 }
 
+// ============================================================
+// 6. MAIN — Run N articles
+// ============================================================
 async function main() {
   const count = parseInt(process.argv[2] || "1", 10);
-  console.log(`Starting publication cycle for ${count} post(s)...`);
+  console.log(`\n🚀 BeautyTrend Daily — Publishing ${count} article(s)...\n`);
 
+  const results = [];
   for (let i = 1; i <= count; i++) {
-    console.log(`\n--- Generating Post ${i} of ${count} ---`);
+    console.log(`\n--- Article ${i} of ${count} ---`);
     try {
-      await generateSingleArticle();
+      const result = await generateSingleArticle();
+      results.push({ success: true, ...result });
       if (i < count) {
-        console.log("Waiting 4 seconds before next generation...");
-        await sleep(4000);
+        console.log("⏳ Waiting 5s before next article...");
+        await sleep(5000);
       }
     } catch (err) {
-      console.error(`❌ Failed generating post ${i}:`, err.message);
+      console.error(`❌ Article ${i} failed:`, err.message);
+      results.push({ success: false, error: err.message });
     }
+  }
+
+  console.log("\n=== PUBLICATION SUMMARY ===");
+  results.forEach((r, i) => {
+    if (r.success) {
+      console.log(`  ✅ Article ${i + 1}: "${r.title}" (${r.wordCount} words)`);
+    } else {
+      console.log(`  ❌ Article ${i + 1}: FAILED — ${r.error}`);
+    }
+  });
+
+  const successCount = results.filter(r => r.success).length;
+  console.log(`\n📊 Result: ${successCount}/${count} articles generated successfully.`);
+  
+  if (successCount === 0 && count > 0) {
+    process.exit(1);
   }
 }
 
 main().catch((err) => {
-  console.error("Pipeline Fatal Error:", err);
+  console.error("🔴 Pipeline Fatal Error:", err);
   process.exit(1);
 });
