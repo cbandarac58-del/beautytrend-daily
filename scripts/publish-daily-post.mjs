@@ -45,7 +45,7 @@ const TOPIC_REGISTRY = [
     topic: "Modern Shag Haircut for Naturally Curly Hair 2026",
     category: "Haircuts",
     searchKey: "Curly shag haircut styling full tutorial 2026",
-    heroPhoto: "https://images.unsplash.com/photo-1584297091622-af8e5fdcf9ef?auto=format&fit=crop&w=1200&h=675&q=85",
+    heroPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Ayo Ogunseinde on Unsplash"
   },
@@ -127,7 +127,7 @@ const TOPIC_REGISTRY = [
     topic: "Braided Updo Masterclass for Weddings & Events 2026",
     category: "Hairstyles",
     searchKey: "Braided updo wedding tutorial step by step",
-    heroPhoto: "https://images.unsplash.com/photo-1584297091622-af8e5fdcf9ef?auto=format&fit=crop&w=1200&h=675&q=85",
+    heroPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Ayo Ogunseinde on Unsplash"
   },
@@ -376,7 +376,7 @@ const TOPIC_REGISTRY = [
     category: "Hair Care",
     searchKey: "Curly girl method curl definition tutorial",
     heroPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1584297091622-af8e5fdcf9ef?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Ayo Ogunseinde on Unsplash"
   },
   {
@@ -580,14 +580,29 @@ function robustJsonParse(text) {
         .replace(/\r/g, "\\n");
       return JSON.parse(sanitized);
     } catch (err2) {
-      console.warn("⚠️ JSON parse fallback — using raw content.");
+      console.warn("⚠️ JSON parse failed — extracting fields safely.");
+      const titleM = cleaned.match(/"title"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      const descM = cleaned.match(/"description"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      const excerptM = cleaned.match(/"excerpt"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      const contentM = cleaned.match(/"content"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
+      
+      let extractedContent = "";
+      if (contentM) {
+        extractedContent = contentM[1].replace(/\\n/g, "\n").replace(/\\"/g, '"');
+      } else {
+        extractedContent = cleaned
+          .replace(/^\{?\s*"title":.*?"content":\s*"/s, "")
+          .replace(/",\s*"faq":.*$/s, "")
+          .replace(/\\n/g, "\n");
+      }
+
       return {
-        title: "",
+        title: titleM ? titleM[1].replace(/\\"/g, '"') : "",
         slug: "",
-        description: "",
-        excerpt: "",
+        description: descM ? descM[1].replace(/\\"/g, '"') : "",
+        excerpt: excerptM ? excerptM[1].replace(/\\"/g, '"') : "",
         keywords: [],
-        content: cleaned,
+        content: extractedContent.trim(),
         faq: []
       };
     }
@@ -784,26 +799,16 @@ RETURN ONLY THIS EXACT JSON (no other text before or after):
   const safeExcerpt = JSON.stringify(article.excerpt || article.description || "");
   const safeCategory = JSON.stringify(topicItem.category);
   const keywordsYaml = (article.keywords || []).map((k) => `  - ${JSON.stringify(k)}`).join("\n");
-  const youtubeYaml = videos.length > 0
+    const youtubeYaml = videos.length > 0
     ? videos.map((v) => `  - title: ${JSON.stringify(v.title)}\n    videoId: ${JSON.stringify(v.videoId)}`).join("\n")
-    : "  - []";
-  const faqYaml = (article.faq || [])
-    .map((f) => `  - question: ${JSON.stringify(f.question)}\n    answer: ${JSON.stringify(f.answer)}`)
-    .join("\n");
-
-  const frontmatter = `---
-title: ${safeTitle}
-description: ${safeDesc}
-excerpt: ${safeExcerpt}
-category: ${safeCategory}
-keywords:
-${keywordsYaml}
-publishedAt: "${now}"
-updatedAt: "${now}"
-heroImage: ${JSON.stringify(topicItem.heroPhoto)}
-imageCredit: ${JSON.stringify(topicItem.photoCredit)}
-youtube:
-${youtubeYaml}
+    : "[]";
+  const faqYaml = (article.faq && article.faq.length > 0)
+    ? (article.faq)
+        .map((f) => `  - question: ${JSON.stringify(f.question)}\n    answer: ${JSON.stringify(f.answer)}`)
+        .join("\n")
+    : "[]";
+  const frontmatter = ---
+$1
 faq:
 ${faqYaml}
 ---
