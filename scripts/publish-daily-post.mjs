@@ -798,32 +798,27 @@ RETURN ONLY THIS EXACT JSON (no other text before or after):
   const safeDesc = JSON.stringify(article.description || `Discover ${topicItem.topic} trends for 2026.`);
   const safeExcerpt = JSON.stringify(article.excerpt || article.description || "");
   const safeCategory = JSON.stringify(topicItem.category);
-  const keywordsYaml = (article.keywords && article.keywords.length > 0)
-    ? (article.keywords).map((k) => `  - ${JSON.stringify(k)}`).join("\n")
-    : "[]";
-    const youtubeYaml = videos.length > 0
-    ? videos.map((v) => `  - title: ${JSON.stringify(v.title)}\n    videoId: ${JSON.stringify(v.videoId)}`).join("\n")
-    : "[]";
-  const faqYaml = (article.faq && article.faq.length > 0)
-    ? (article.faq)
-        .map((f) => `  - question: ${JSON.stringify(f.question)}\n    answer: ${JSON.stringify(f.answer)}`)
-        .join("\n")
-    : "[]";
+  const keywordsSection = (article.keywords && article.keywords.length > 0)
+    ? "keywords:\n" + (article.keywords).map((k) => `  - ${JSON.stringify(k)}`).join("\n")
+    : "keywords: []";
+  const youtubeSection = videos.length > 0
+    ? "youtube:\n" + videos.map((v) => `  - title: ${JSON.stringify(v.title)}\n    videoId: ${JSON.stringify(v.videoId)}`).join("\n")
+    : "youtube: []";
+  const faqSection = (article.faq && article.faq.length > 0)
+    ? "faq:\n" + (article.faq).map((f) => `  - question: ${JSON.stringify(f.question)}\n    answer: ${JSON.stringify(f.answer)}`).join("\n")
+    : "faq: []";
   const frontmatter = `---
 title: ${safeTitle}
 description: ${safeDesc}
 excerpt: ${safeExcerpt}
 category: ${safeCategory}
-keywords:
-${keywordsYaml}
+${keywordsSection}
 publishedAt: "${now}"
 updatedAt: "${now}"
 heroImage: ${JSON.stringify(topicItem.heroPhoto)}
 imageCredit: ${JSON.stringify(topicItem.photoCredit)}
-youtube:
-${youtubeYaml}
-faq:
-${faqYaml}
+${youtubeSection}
+${faqSection}
 ---
 
 ${cleanContent}
