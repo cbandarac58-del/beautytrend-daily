@@ -798,7 +798,9 @@ RETURN ONLY THIS EXACT JSON (no other text before or after):
   const safeDesc = JSON.stringify(article.description || `Discover ${topicItem.topic} trends for 2026.`);
   const safeExcerpt = JSON.stringify(article.excerpt || article.description || "");
   const safeCategory = JSON.stringify(topicItem.category);
-  const keywordsYaml = (article.keywords || []).map((k) => `  - ${JSON.stringify(k)}`).join("\n");
+  const keywordsYaml = (article.keywords && article.keywords.length > 0)
+    ? (article.keywords).map((k) => `  - ${JSON.stringify(k)}`).join("\n")
+    : "[]";
     const youtubeYaml = videos.length > 0
     ? videos.map((v) => `  - title: ${JSON.stringify(v.title)}\n    videoId: ${JSON.stringify(v.videoId)}`).join("\n")
     : "[]";
