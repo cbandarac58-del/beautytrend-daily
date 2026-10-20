@@ -580,20 +580,70 @@ function robustJsonParse(text) {
         .replace(/\r/g, "\\n");
       return JSON.parse(sanitized);
     } catch (err2) {
-      console.warn("⚠️ JSON parse failed — extracting fields safely.");
+      console.warn("âš ï¸ JSON parse failed - extracting fields safely with substring slicing.");
       const titleM = cleaned.match(/"title"\s*:\s*"((?:[^"\\]|\\.)*)"/);
       const descM = cleaned.match(/"description"\s*:\s*"((?:[^"\\]|\\.)*)"/);
       const excerptM = cleaned.match(/"excerpt"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-      const contentM = cleaned.match(/"content"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
       
       let extractedContent = "";
-      if (contentM) {
-        extractedContent = contentM[1].replace(/\\n/g, "\n").replace(/\\"/g, '"');
-      } else {
-        extractedContent = cleaned
-          .replace(/^\{?\s*"title":.*?"content":\s*"/s, "")
-          .replace(/",\s*"faq":.*$/s, "")
-          .replace(/\\n/g, "\n");
+      const contentToken = '"content":';
+      const cIdx = cleaned.indexOf(contentToken);
+      if (cIdx !== -1) {
+        const startQuote = cleaned.indexOf('"', cIdx + contentToken.length);
+        if (startQuote !== -1) {
+          const afterStart = startQuote + 1;
+          // Look for boundary tokens where content ends
+          let endPos = -1;
+          const endTokens = ['",\n  "faq"', '",\r\n  "faq"', '", "faq"', '",\n  "youtube"', '",\r\n  "youtube"', '",\n  "keywords"', '",\r\n  "keywords"'];
+          for (const tok of endTokens) {
+            const tIdx = cleaned.indexOf(tok, afterStart);
+            if (tIdx !== -1 && (endPos === -1 || tIdx < endPos)) {
+              endPos = tIdx;
+            }
+          }
+          if (endPos === -1) {
+            // Find last quote before closing brace
+            const lastBrace = cleaned.lastIndexOf('}');
+            if (lastBrace > afterStart) {
+              const sub = cleaned.substring(afterStart, lastBrace);
+              const lastQuote = sub.lastIndexOf('"');
+              if (lastQuote !== -1) {
+                endPos = afterStart + lastQuote;
+              }
+            }
+          }
+          if (endPos !== -1) {
+            extractedContent = cleaned.substring(afterStart, endPos);
+          } else {
+            extractedContent = cleaned.substring(afterStart);
+          }
+        }
+      }
+      
+      extractedContent = extractedContent
+        .replace(/\\n/g, "\n")
+        .replace(/\\r/g, "\r")
+        .replace(/\\"/g, '"')
+        .replace(/\\t/g, "\t")
+        .replace(/\\\\/g, "\\");
+
+      // Extract keywords array if present
+      let keywords = [];
+      const kwM = cleaned.match(/"keywords"\s*:\s*\[([\s\S]*?)\]/);
+      if (kwM) {
+        const items = [...kwM[1].matchAll(/"((?:[^"\\]|\\.)*)"/g)];
+        keywords = items.map(m => m[1].replace(/\\"/g, '"'));
+      }
+
+      // Extract FAQ array if present
+      let faq = [];
+      const faqM = cleaned.match(/"faq"\s*:\s*\[([\s\S]*?)\]/);
+      if (faqM) {
+        const qMatches = [...faqM[1].matchAll(/"question"\s*:\s*"((?:[^"\\]|\\.)*)"[\s\S]*?"answer"\s*:\s*"((?:[^"\\]|\\.)*)"/g)];
+        faq = qMatches.map(m => ({
+          question: m[1].replace(/\\"/g, '"').replace(/\\n/g, "\n"),
+          answer: m[2].replace(/\\"/g, '"').replace(/\\n/g, "\n")
+        }));
       }
 
       return {
@@ -601,9 +651,9 @@ function robustJsonParse(text) {
         slug: "",
         description: descM ? descM[1].replace(/\\"/g, '"') : "",
         excerpt: excerptM ? excerptM[1].replace(/\\"/g, '"') : "",
-        keywords: [],
+        keywords,
         content: extractedContent.trim(),
-        faq: []
+        faq
       };
     }
   }
