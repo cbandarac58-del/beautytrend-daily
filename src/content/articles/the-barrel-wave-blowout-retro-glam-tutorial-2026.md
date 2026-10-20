@@ -13,8 +13,7 @@ youtube:
     videoId: "y7MTkjS6HX8"
   - title: "Hollywood Waves TUTORIAL"
     videoId: "eAm4f7J9lJw"
-faq:
-[]
+faq: []
 ---
 
 
