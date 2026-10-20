@@ -16,69 +16,69 @@ export const GET: APIRoute = async () => {
   ];
 
   const staticUrls = [
-    `
-  <url>
+    `  <url>
     <loc>${siteUrl}/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>`,
-    `
-  <url>
+    `  <url>
     <loc>${siteUrl}/about/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>`,
-    `
-  <url>
+    `  <url>
     <loc>${siteUrl}/privacy/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>`,
-    `
-  <url>
+    `  <url>
     <loc>${siteUrl}/terms/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>`,
-    `
-  <url>
+    `  <url>
     <loc>${siteUrl}/contact/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>`,
   ];
 
-  const categoryUrls = categories.map((cat) => `
-  <url>
+  const categoryUrls = categories
+    .map(
+      (cat) => `  <url>
     <loc>${siteUrl}/category/${cat}/</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
-  </url>`).join('');
+  </url>`
+    )
+    .join('\n');
 
   const articleUrls = articles
     .map((article) => {
       const slug = article.id.replace(/\.md$/, '');
-      const date = article.data.updatedAt || article.data.publishedAt;
-      return `
-  <url>
+      const rawDate = article.data.updatedAt || article.data.publishedAt;
+      const date = rawDate ? new Date(rawDate).toISOString() : new Date().toISOString();
+      return `  <url>
     <loc>${siteUrl}/articles/${slug}/</loc>
-    <lastmod>${new Date(date).toISOString()}</lastmod>
+    <lastmod>${date}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>`;
     })
-    .join('');
+    .join('\n');
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${staticUrls.join('')}
-  ${categoryUrls}
-  ${articleUrls}
+${staticUrls.join('\n')}
+${categoryUrls}
+${articleUrls}
 </urlset>`;
 
   return new Response(sitemap.trim(), {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
+      'X-Robots-Tag': 'all',
+      'Cache-Control': 'public, max-age=3600',
     },
   });
 };
