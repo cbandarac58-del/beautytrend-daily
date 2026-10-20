@@ -807,7 +807,7 @@ RETURN ONLY THIS EXACT JSON (no other text before or after):
         .map((f) => `  - question: ${JSON.stringify(f.question)}\n    answer: ${JSON.stringify(f.answer)}`)
         .join("\n")
     : "[]";
-    const frontmatter = ---
+  const frontmatter = `---
 title: ${safeTitle}
 description: ${safeDesc}
 excerpt: ${safeExcerpt}
@@ -825,7 +825,7 @@ ${faqYaml}
 ---
 
 ${cleanContent}
-;
+`;
 
   fs.writeFileSync(filePath, frontmatter, "utf8");
   console.log(`✅ Saved: ${filePath} (${wordCount} words)`);
