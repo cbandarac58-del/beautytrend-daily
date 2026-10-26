@@ -1,7 +1,7 @@
 ---
-title: "Defining Curls 2026: Your Ultimate Masterclass for Modern CGM Success"
+title: "Defining Curls in 2026: The Modern Routine for Bounce, Shine & Zero Crunch"
 description: "Master the evolved Curly Girl Method for 2026! Discover personalized techniques, advanced formulas, and expert tips for defined, healthy, and vibrant curls."
-excerpt: "Welcome to the definitive guide for mastering the Curly Girl Method in 2026, where personalization, science, and sustainability converge to redefine curl care. This masterclass from BeautyTrend Daily will empower you to unlock your most beautiful, authentic curls yet."
+excerpt: "Welcome to the definitive guide for mastering the Curly Girl Method in 2026, where personalization, science, and sustainability converge to redefine curl care. this guide from BeautyTrend Daily will empower you to unlock your most beautiful, authentic curls yet."
 category: "Hair Care"
 keywords:
   - "curly girl method 2026"
