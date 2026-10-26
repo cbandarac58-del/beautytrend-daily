@@ -25,6 +25,11 @@ export const GET: APIRoute = async () => {
   </url>`,
     `  <url>
     <loc>${siteUrl}/about/</loc>
+  </url>
+  <url>
+    <loc>${siteUrl}/quiz/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>`,
