@@ -13,6 +13,8 @@ export const GET: APIRoute = async () => {
     'nail-styles',
     'nail-art',
     'beauty-trends',
+    'mens-haircuts',
+    'mens-grooming',
   ];
 
   const staticUrls = [
