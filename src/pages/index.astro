@@ -296,6 +296,38 @@ const itemListSchema = {
         font-weight: 600;
       }
       .footer-links a:hover { color: #d65d7a; }
+    
+      .quiz-cta-banner {
+        background: linear-gradient(135deg, #1a1a2e 0%, #6366f1 100%);
+        padding: 3rem 1.5rem;
+        margin-top: 2rem;
+      }
+      .quiz-cta-inner {
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+      }
+      .quiz-cta-icon { font-size: 3rem; flex-shrink: 0; }
+      .quiz-cta-text { flex: 1; min-width: 200px; color: white; }
+      .quiz-cta-text h2 { font-size: 1.4rem; font-weight: 700; margin: 0 0 0.5rem; }
+      .quiz-cta-text p { font-size: 0.95rem; opacity: 0.85; margin: 0; }
+      .quiz-cta-btn {
+        display: inline-block;
+        background: white;
+        color: #6366f1;
+        font-weight: 700;
+        padding: 0.85rem 1.75rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-size: 1rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .quiz-cta-btn:hover { transform: scale(1.04); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
     </style>
   </head>
 
@@ -360,6 +392,18 @@ const itemListSchema = {
               </article>
             );
           })}
+        </div>
+      </section>
+    
+      <!-- Quiz CTA Section -->
+      <section class="quiz-cta-banner">
+        <div class="quiz-cta-inner">
+          <div class="quiz-cta-icon">âœ¨</div>
+          <div class="quiz-cta-text">
+            <h2>Not sure which hairstyle suits you?</h2>
+            <p>Take our free 6-question quiz and get a personalized 2026 hairstyle recommendation from our licensed stylists.</p>
+          </div>
+          <a href="/quiz/" class="quiz-cta-btn">Take the Free Quiz â†’</a>
         </div>
       </section>
     </main>
