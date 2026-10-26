@@ -1,0 +1,69 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  let articles = [];
+  try {
+    articles = await getCollection('es');
+  } catch (e) {
+    return [];
+  }
+  return articles.map(article => ({
+    params: { slug: article.id.replace(/\.md$/, '') },
+    props: { article }
+  }));
+}
+
+const { article } = Astro.props;
+const { Content } = await article.render();
+const { title, description, heroImage, publishedAt, category, imageCredit, excerpt } = article.data;
+const publishDate = new Date(publishedAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+---
+
+<Layout title={title} description={description || excerpt}>
+  <link rel="alternate" hreflang="en" href={`https://beautytrend-daily.pages.dev/articles/${article.data.translatedFrom || article.id.replace(/-es$/, '')}/`} />
+  <link rel="alternate" hreflang="es" href={`https://beautytrend-daily.pages.dev/es/${article.id.replace(/\.md$/, '')}/`} />
+
+  <article class="es-article">
+    <div class="es-hero">
+      {heroImage && <img src={heroImage} alt={title} class="es-hero-img" width="1200" height="675" loading="eager" />}
+      <div class="es-hero-content">
+        <a href={`/es/categoria/${category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}/`} class="es-category-badge">{category}</a>
+        <h1>{title}</h1>
+        <div class="es-meta">
+          <span>Por Sarah Chen | Cosmetóloga Licenciada</span>
+          <span>{publishDate}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="es-content container">
+      <div class="es-lang-notice">
+        <span>🇬🇧</span>
+        <span>Read in English: <a href={`/articles/${article.data.translatedFrom || article.id.replace(/-es$/, '')}/`}>English version →</a></span>
+      </div>
+      <Content />
+    </div>
+  </article>
+</Layout>
+
+<style>
+  .es-article { font-family: system-ui, sans-serif; }
+  .container { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
+  .es-hero { position: relative; }
+  .es-hero-img { width: 100%; height: 400px; object-fit: cover; display: block; }
+  .es-hero-content { padding: 2rem 0; }
+  .es-category-badge { display: inline-block; background: #d65d7a; color: white; font-size: 0.8rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 20px; text-decoration: none; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .es-hero h1 { font-size: clamp(1.6rem, 4vw, 2.5rem); font-weight: 800; color: #1a1a2e; line-height: 1.3; margin-bottom: 0.75rem; }
+  .es-meta { display: flex; gap: 1rem; font-size: 0.85rem; color: #666; flex-wrap: wrap; }
+  .es-content { padding: 2rem 0 4rem; }
+  .es-lang-notice { background: #f0f8ff; border: 1px solid #bde0ff; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 2rem; font-size: 0.9rem; color: #1a5f8c; display: flex; gap: 0.5rem; align-items: center; }
+  .es-lang-notice a { color: #1a5f8c; font-weight: 600; }
+  .es-content :global(h2) { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #f0f0f0; }
+  .es-content :global(p) { line-height: 1.8; color: #333; margin-bottom: 1.2rem; }
+  .es-content :global(ul), .es-content :global(ol) { padding-left: 1.5rem; margin-bottom: 1.2rem; }
+  .es-content :global(li) { line-height: 1.7; margin-bottom: 0.4rem; }
+  .es-content :global(blockquote) { border-left: 4px solid #6366f1; padding-left: 1rem; color: #555; font-style: italic; margin: 1.5rem 0; }
+  .es-content :global(strong) { color: #1a1a2e; }
+</style>
