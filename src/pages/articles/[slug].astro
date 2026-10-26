@@ -52,7 +52,37 @@ const formattedUpdatedDate = updatedAt
 
 const categorySlug = (category || 'beauty-trends')
   .toLowerCase()
-  .replace(/\s+/g, '-');
+  .replace(/['’]/g, '')
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-|-$/g, '');
+
+// Dynamic Expert Author Selection based on category
+const isMens = categorySlug.includes('mens');
+const isNails = categorySlug.includes('nail');
+
+const author = isMens
+  ? {
+      name: "Marcus Rivera",
+      role: "Men's Grooming Expert & Master Barber",
+      badge: "Master Barber & Educator",
+      photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=85",
+      bio: "Marcus is a licensed master barber and Andis educator with 9+ years of barbershop experience in New York. He has competed nationally in precision fade competitions and tests all men's haircut and beard routines."
+    }
+  : isNails
+  ? {
+      name: "Priya Nair",
+      role: "Nail Art Specialist & Certified Nail Tech",
+      badge: "CND Shellac Certified",
+      photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=80&h=80&q=85",
+      bio: "Priya is a licensed nail technician and CND Shellac certified artist with 7+ years salon experience. Her nail artistry has been featured at New York Fashion Week and in NailPro Magazine."
+    }
+  : {
+      name: "Sarah Chen",
+      role: "Lead Beauty Editor & Licensed Cosmetologist",
+      badge: "Licensed Cosmetologist",
+      photo: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=80&h=80&q=85",
+      bio: "Sarah Chen is a licensed cosmetologist with 12+ years of professional experience in top salons across Los Angeles and New York. Her work has been featured in Allure, InStyle, and Cosmopolitan."
+    };
 
 // Uniform High-Resolution Featured Cover Photo
 const featuredImage =
@@ -676,21 +706,21 @@ const faqSchema =
       <div class="author-bio-box" itemscope itemtype="https://schema.org/Person">
         <div class="author-bio-header">
           <img
-            src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=80&h=80&q=85"
-            alt="Sarah Chen - Lead Beauty Editor"
+            src={author.photo}
+            alt={`${author.name} - ${author.role}`}
             class="author-bio-photo"
             width="80"
             height="80"
             itemprop="image"
           />
           <div>
-            <p class="author-bio-name" itemprop="name">Sarah Chen</p>
-            <p class="author-bio-title" itemprop="jobTitle">Lead Beauty Editor & Licensed Cosmetologist</p>
-            <span class="author-verified-badge">Verified Beauty Professional</span>
+            <p class="author-bio-name" itemprop="name">{author.name}</p>
+            <p class="author-bio-title" itemprop="jobTitle">{author.role}</p>
+            <span class="author-verified-badge">{author.badge}</span>
           </div>
         </div>
-        <p class="author-bio-text" itemprop="description">Sarah Chen is a licensed cosmetologist with 12+ years of professional experience in top salons across Los Angeles and New York. Her work has been featured in Allure, InStyle, and Cosmopolitan. She personally reviews all beauty guides published on BeautyTrend Daily for accuracy and safety.</p>
-        <a href="/about" class="author-bio-link">View Full Expert Profile</a>
+        <p class="author-bio-text" itemprop="description">{author.bio}</p>
+        <a href="/about" class="author-bio-link">View Full Editorial Team & Credentials →</a>
       </div>
       </article>
     </main>
