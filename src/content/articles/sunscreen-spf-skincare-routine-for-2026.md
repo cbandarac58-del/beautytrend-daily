@@ -12,7 +12,7 @@ keywords:
   - "Reef-Safe Sunscreen"
 publishedAt: "2026-10-22"
 updatedAt: "2026-10-22"
-heroImage: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85"
+heroImage: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85"
 imageCredit: "Photo by Raphael Lovaski on Unsplash"
 youtube:
   - title: "Skincare Basics Easy Morning and Night Routine"
