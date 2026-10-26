@@ -454,6 +454,152 @@ const TOPIC_REGISTRY = [
     heroPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Raphael Lovaski on Unsplash"
+  },
+
+  // === MEN'S HAIRCUTS & GROOMING ===
+  {
+    topic: "Low Taper Fade Haircut: The 2026 Men's Complete Guide",
+    category: "Men's Haircuts",
+    searchKey: "low taper fade haircut men 2026 tutorial barber",
+    heroPhoto: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Nik Shuliahin on Unsplash"
+  },
+  {
+    topic: "Burst Fade Mohawk: Bold Men's Style Masterclass 2026",
+    category: "Men's Haircuts",
+    searchKey: "burst fade mohawk men haircut 2026 barber tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Nik Shuliahin on Unsplash"
+  },
+  {
+    topic: "Textured Crop Fade: Men's Modern Classic 2026 Guide",
+    category: "Men's Haircuts",
+    searchKey: "textured crop fade men haircut 2026 tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Tim Mossholder on Unsplash"
+  },
+  {
+    topic: "Classic Pompadour Revival: Men's 2026 Style Guide",
+    category: "Men's Haircuts",
+    searchKey: "pompadour haircut men 2026 styling tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Nik Shuliahin on Unsplash"
+  },
+  {
+    topic: "Men's Curtain Hairstyle: Soft Middle Part 2026 Masterclass",
+    category: "Men's Haircuts",
+    searchKey: "men curtain hairstyle middle part 2026 tutorial styling",
+    heroPhoto: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Alex Suprun on Unsplash"
+  },
+  {
+    topic: "High Skin Fade with Hard Part: Men's 2026 Barber Guide",
+    category: "Men's Haircuts",
+    searchKey: "high skin fade hard part men 2026 barber cut",
+    heroPhoto: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Nik Shuliahin on Unsplash"
+  },
+  {
+    topic: "Slick Back Undercut: Men's Power Look 2026 Tutorial",
+    category: "Men's Haircuts",
+    searchKey: "slick back undercut men 2026 styling tutorial pomade",
+    heroPhoto: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Tim Mossholder on Unsplash"
+  },
+  {
+    topic: "Men's Wolf Cut 2026: Shaggy Rock Revival Styling Guide",
+    category: "Men's Haircuts",
+    searchKey: "men wolf cut shaggy hair 2026 styling tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Alex Suprun on Unsplash"
+  },
+  {
+    topic: "Edgar Cut & Drop Fade: Latino Style Masterclass 2026",
+    category: "Men's Haircuts",
+    searchKey: "edgar cut drop fade men 2026 barber tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Nik Shuliahin on Unsplash"
+  },
+  {
+    topic: "Men's Buzz Cut Variations: Complete 2026 Barber Guide",
+    category: "Men's Haircuts",
+    searchKey: "buzz cut men variations 2026 barber guide",
+    heroPhoto: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Nik Shuliahin on Unsplash"
+  },
+  {
+    topic: "Men's Beard Styling & Grooming Masterclass 2026",
+    category: "Men's Grooming",
+    searchKey: "men beard grooming styling 2026 tutorial maintenance",
+    heroPhoto: "https://images.unsplash.com/photo-1534126511673-b6899657816a?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Hamid Tajik on Unsplash"
+  },
+  {
+    topic: "Men's Skincare Routine 2026: Glow-Up Guide for All Skin Types",
+    category: "Men's Grooming",
+    searchKey: "men skincare routine 2026 glow up guide",
+    heroPhoto: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1534126511673-b6899657816a?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Raphael Lovaski on Unsplash"
+  },
+  {
+    topic: "Men's Hair Wax, Clay & Pomade: Product Guide 2026",
+    category: "Men's Grooming",
+    searchKey: "men hair wax clay pomade product guide 2026",
+    heroPhoto: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1534126511673-b6899657816a?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Tim Mossholder on Unsplash"
+  },
+  {
+    topic: "Men's Curly Hair Care & Styling Routine 2026",
+    category: "Men's Haircuts",
+    searchKey: "men curly hair care styling 2026 tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Alex Suprun on Unsplash"
+  },
+  {
+    topic: "Side Part & Comb Over: Classic Men's Look 2026 Guide",
+    category: "Men's Haircuts",
+    searchKey: "side part comb over men classic haircut 2026",
+    heroPhoto: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Nik Shuliahin on Unsplash"
+  },
+  {
+    topic: "Men's Hair Growth & Scalp Health: Complete 2026 Guide",
+    category: "Men's Grooming",
+    searchKey: "men hair growth scalp health routine 2026",
+    heroPhoto: "https://images.unsplash.com/photo-1534126511673-b6899657816a?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Hamid Tajik on Unsplash"
+  },
+  {
+    topic: "Men's Clean Cut Fade: Office & Professional Look 2026",
+    category: "Men's Haircuts",
+    searchKey: "men clean cut fade professional office look 2026",
+    heroPhoto: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Nik Shuliahin on Unsplash"
+  },
+  {
+    topic: "Two-Block Korean Men's Haircut Trend 2026 Masterclass",
+    category: "Men's Haircuts",
+    searchKey: "two block korean men haircut 2026 kpop style tutorial",
+    heroPhoto: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&w=1200&h=675&q=85",
+    photoCredit: "Photo by Alex Suprun on Unsplash"
   }
 ];
 
