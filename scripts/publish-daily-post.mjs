@@ -954,6 +954,39 @@ RETURN ONLY THIS EXACT JSON (no other text before or after):
   // Clean content — remove accidental H1 at top
   let cleanContent = String(article.content || "").trim();
   cleanContent = cleanContent.replace(/^#+\s+[^\n]+\n+/, "").trim();
+  // INJECT CONTEXTUAL INTERLINKS into article body
+  try {
+    const existingMdFiles = fs.existsSync(ARTICLES_DIR)
+      ? fs.readdirSync(ARTICLES_DIR).filter(f => f.endsWith('.md') && f !== `.md`)
+      : [];
+    const existingArticlesForLinks = existingMdFiles.map(f => {
+      const fc = fs.readFileSync(path.join(ARTICLES_DIR, f), 'utf8');
+      const titleMatch = fc.match(/^title:\s*"?(.+?)"?\s*$/m);
+      const catMatch = fc.match(/^category:\s*"?(.+?)"?\s*$/m);
+      return {
+        slug: f.replace(/\.md$/, ''),
+        title: titleMatch ? titleMatch[1].replace(/"/g, '') : '',
+        category: catMatch ? catMatch[1].replace(/"/g, '') : '',
+      };
+    }).filter(a => a.title);
+    const sameCatLinks = existingArticlesForLinks.filter(a => a.category === topicItem.category).slice(0, 2);
+    const crossCatLinks = existingArticlesForLinks.filter(a => a.category !== topicItem.category).slice(0, 1);
+    const relatedForLinks = [...sameCatLinks, ...crossCatLinks];
+    if (relatedForLinks.length > 0) {
+      const interLinkBlock2 = '\n\n---\n\n> **You Might Also Like:**\n' +
+        relatedForLinks.map(a => '> - [' + a.title + '](https://beautytrend-daily.pages.dev/articles/' + a.slug + '/)').join('\n') +
+        '\n\n---\n\n';
+      const h2Matches = [...cleanContent.matchAll(/\n## /g)];
+      if (h2Matches.length >= 2) {
+        const insertAt = h2Matches[1].index;
+        cleanContent = cleanContent.substring(0, insertAt) + interLinkBlock2 + cleanContent.substring(insertAt);
+      } else {
+        cleanContent += interLinkBlock2;
+      }
+    }
+  } catch (linkErr) {
+    console.warn('Interlink injection skipped:', linkErr.message);
+  }
 
   // INJECT VIDEO after Step-by-Step section
   if (featuredVideo) {
