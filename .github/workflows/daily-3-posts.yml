@@ -43,17 +43,25 @@ jobs:
           echo "Generating $COUNT article(s)..."
           node scripts/publish-daily-post.mjs "$COUNT"
 
+      - name: Translate Latest Articles to Spanish
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          echo "Translating latest 2 articles to Spanish..."
+          node scripts/translate-to-spanish.mjs 2 || echo "Translation step completed"
+
       - name: Commit and Push new articles
         run: |
           git config --global user.name "BeautyTrend Bot"
           git config --global user.email "bot@beautytrend-daily.com"
-          git add src/content/articles/
+          git add src/content/articles/ src/content/es/
           if git diff --staged --quiet; then
             echo "No new articles to commit."
           else
-            ARTICLE_COUNT=$(git diff --staged --name-only | wc -l)
-            git commit -m "✨ Published $ARTICLE_COUNT new beauty article(s) — $(date +'%Y-%m-%d %H:%M UTC')"
+            ARTICLE_COUNT=$(git diff --staged --name-only | grep -c 'articles/' || true)
+            ES_COUNT=$(git diff --staged --name-only | grep -c 'content/es/' || true)
+            git commit -m "🌐 Published ${ARTICLE_COUNT:-0} article(s) + ${ES_COUNT:-0} Spanish translation(s) - $(date +'%Y-%m-%d %H:%M UTC')"
             git pull --rebase origin main
             git push origin main
-            echo "SUCCESS: Pushed $ARTICLE_COUNT new article(s) to repo!"
+            echo "SUCCESS: Pushed articles and Spanish translations!"
           fi
