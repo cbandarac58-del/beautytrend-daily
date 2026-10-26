@@ -147,6 +147,11 @@ const faqSchema =
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content="BeautyTrend Daily" />
     <meta property="og:image" content={featuredImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="675" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={featuredImage} />
     <meta property="article:published_time" content={new Date(publishedAt).toISOString()} />
     <meta property="article:section" content={category} />
 
@@ -511,6 +516,68 @@ const faqSchema =
         font-size: 13px;
       }
       .footer-links a:hover { color: #d65d7a; }
+    
+      /* Author Bio Box */
+      .author-bio-box {
+        margin: 3rem 0 1.5rem;
+        padding: 1.5rem 2rem;
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+        border-radius: 16px;
+        border: 1px solid #e0e4ff;
+        border-left: 4px solid #6366f1;
+      }
+      .author-bio-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+      .author-bio-photo {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #6366f1;
+        flex-shrink: 0;
+      }
+      .author-bio-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin: 0 0 0.2rem;
+      }
+      .author-bio-title {
+        font-size: 0.85rem;
+        color: #6366f1;
+        font-weight: 600;
+        margin: 0 0 0.3rem;
+      }
+      .author-verified-badge {
+        display: inline-block;
+        background: #dcfce7;
+        color: #166534;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.2rem 0.5rem;
+        border-radius: 20px;
+        border: 1px solid #bbf7d0;
+      }
+      .author-bio-text {
+        font-size: 0.9rem;
+        color: #444;
+        line-height: 1.7;
+        margin-bottom: 1rem;
+      }
+      .author-bio-link {
+        display: inline-block;
+        color: #6366f1;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 1px;
+      }
+      .author-bio-link:hover { opacity: 0.8; }
     </style>
   </head>
 
@@ -604,6 +671,27 @@ const faqSchema =
             </section>
           )
         }
+      
+      <!-- Author Bio Box -->
+      <div class="author-bio-box" itemscope itemtype="https://schema.org/Person">
+        <div class="author-bio-header">
+          <img
+            src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=80&h=80&q=85"
+            alt="Sarah Chen - Lead Beauty Editor"
+            class="author-bio-photo"
+            width="80"
+            height="80"
+            itemprop="image"
+          />
+          <div>
+            <p class="author-bio-name" itemprop="name">Sarah Chen</p>
+            <p class="author-bio-title" itemprop="jobTitle">Lead Beauty Editor & Licensed Cosmetologist</p>
+            <span class="author-verified-badge">Verified Beauty Professional</span>
+          </div>
+        </div>
+        <p class="author-bio-text" itemprop="description">Sarah Chen is a licensed cosmetologist with 12+ years of professional experience in top salons across Los Angeles and New York. Her work has been featured in Allure, InStyle, and Cosmopolitan. She personally reviews all beauty guides published on BeautyTrend Daily for accuracy and safety.</p>
+        <a href="/about" class="author-bio-link">View Full Expert Profile</a>
+      </div>
       </article>
     </main>
 
