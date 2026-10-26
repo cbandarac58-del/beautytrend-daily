@@ -253,7 +253,7 @@ const TOPIC_REGISTRY = [
     topic: "Glass Skin Barrier Repair Skincare Routine 2026",
     category: "Beauty Trends",
     searchKey: "Korean glass skin routine barrier repair tutorial",
-    heroPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    heroPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Raphael Lovaski on Unsplash"
   },
@@ -262,7 +262,7 @@ const TOPIC_REGISTRY = [
     category: "Beauty Trends",
     searchKey: "Fluffy laminated brows tutorial masterclass 2026",
     heroPhoto: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Tamara Bellis on Unsplash"
   },
   {
@@ -285,7 +285,7 @@ const TOPIC_REGISTRY = [
     topic: "Skin Tint & Tinted Moisturizer: No-Makeup Look 2026",
     category: "Beauty Trends",
     searchKey: "Skin tint no makeup look tutorial natural finish",
-    heroPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    heroPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Raphael Lovaski on Unsplash"
   },
@@ -294,7 +294,7 @@ const TOPIC_REGISTRY = [
     category: "Beauty Trends",
     searchKey: "Cherry red lip tutorial classic bold makeup",
     heroPhoto: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Tamara Bellis on Unsplash"
   },
   {
@@ -309,7 +309,7 @@ const TOPIC_REGISTRY = [
     topic: "Sunscreen & SPF Skincare Routine for 2026",
     category: "Beauty Trends",
     searchKey: "Sunscreen skincare routine SPF daytime guide tutorial",
-    heroPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    heroPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Raphael Lovaski on Unsplash"
   },
@@ -325,7 +325,7 @@ const TOPIC_REGISTRY = [
     topic: "Retinol & Vitamin C Skincare Layering Guide 2026",
     category: "Beauty Trends",
     searchKey: "Retinol vitamin C skincare layering guide tutorial",
-    heroPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    heroPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Raphael Lovaski on Unsplash"
   },
@@ -334,7 +334,7 @@ const TOPIC_REGISTRY = [
     category: "Beauty Trends",
     searchKey: "Blush draping editorial makeup technique tutorial",
     heroPhoto: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Valerie Elash on Unsplash"
   },
   {
@@ -359,7 +359,7 @@ const TOPIC_REGISTRY = [
     topic: "Scalp Care & Hair Growth Routine 2026",
     category: "Hair Care",
     searchKey: "Scalp care hair growth routine tutorial massage",
-    heroPhoto: "https://images.unsplash.com/photo-1505502416-9de2f1eef3bc?auto=format&fit=crop&w=1200&h=675&q=85",
+    heroPhoto: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo on Unsplash (Free Commercial License)"
   },
@@ -383,7 +383,7 @@ const TOPIC_REGISTRY = [
     topic: "Hair Oiling Rituals: Ayurvedic Beauty Guide 2026",
     category: "Hair Care",
     searchKey: "Hair oiling Ayurvedic ritual tutorial scalp massage",
-    heroPhoto: "https://images.unsplash.com/photo-1505502416-9de2f1eef3bc?auto=format&fit=crop&w=1200&h=675&q=85",
+    heroPhoto: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo on Unsplash (Free Commercial License)"
   },
@@ -427,7 +427,7 @@ const TOPIC_REGISTRY = [
     topic: "Gua Sha & Facial Massage: Anti-Aging Ritual 2026",
     category: "Beauty Trends",
     searchKey: "Gua sha facial massage anti aging tutorial ritual",
-    heroPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    heroPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Raphael Lovaski on Unsplash"
   },
@@ -436,14 +436,14 @@ const TOPIC_REGISTRY = [
     category: "Beauty Trends",
     searchKey: "Facial yoga lymphatic drainage technique tutorial",
     heroPhoto: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85",
-    detailPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    detailPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Valerie Elash on Unsplash"
   },
   {
     topic: "Hyaluronic Acid Serum Guide for All Skin Types 2026",
     category: "Beauty Trends",
     searchKey: "Hyaluronic acid serum tutorial all skin types guide",
-    heroPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    heroPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Raphael Lovaski on Unsplash"
   },
@@ -451,7 +451,7 @@ const TOPIC_REGISTRY = [
     topic: "Night Skin Routine: Repair & Regeneration 2026",
     category: "Beauty Trends",
     searchKey: "Night skin routine repair regeneration tutorial",
-    heroPhoto: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85",
+    heroPhoto: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85",
     detailPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&h=675&q=85",
     photoCredit: "Photo by Raphael Lovaski on Unsplash"
   }
@@ -594,10 +594,11 @@ function robustJsonParse(text) {
           const afterStart = startQuote + 1;
           // Look for boundary tokens where content ends
           let endPos = -1;
+          // Look for boundary tokens from the end of the text backwards
           const endTokens = ['",\n  "faq"', '",\r\n  "faq"', '", "faq"', '",\n  "youtube"', '",\r\n  "youtube"', '",\n  "keywords"', '",\r\n  "keywords"'];
           for (const tok of endTokens) {
-            const tIdx = cleaned.indexOf(tok, afterStart);
-            if (tIdx !== -1 && (endPos === -1 || tIdx < endPos)) {
+            const tIdx = cleaned.lastIndexOf(tok);
+            if (tIdx > afterStart + 500 && (endPos === -1 || tIdx > endPos)) {
               endPos = tIdx;
             }
           }
@@ -841,6 +842,9 @@ RETURN ONLY THIS EXACT JSON (no other text before or after):
   }
 
   const wordCount = cleanContent.split(/\s+/).filter(w => w.length > 0).length;
+  if (wordCount < 800) {
+    throw new Error(`Generated article too short (${wordCount} words < 800 minimum). Triggering retry...`);
+  }
   console.log(`📊 Word Count: ${wordCount} words (Target: 1300+)`);
 
   // Build frontmatter
