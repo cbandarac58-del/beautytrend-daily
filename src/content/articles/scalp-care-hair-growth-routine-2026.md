@@ -16,7 +16,7 @@ keywords:
   - "healthy scalp"
 publishedAt: "2026-10-21"
 updatedAt: "2026-10-21"
-heroImage: "https://images.unsplash.com/photo-1505502416-9de2f1eef3bc?auto=format&fit=crop&w=1200&h=675&q=85"
+heroImage: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1200&h=675&q=85"
 imageCredit: "Photo on Unsplash (Free Commercial License)"
 youtube:
   - title: "Accelerate Hair Regrowth! The #1 Proven Massage for Increasing Scalp Blood Flow | Hair Loss Solution"
