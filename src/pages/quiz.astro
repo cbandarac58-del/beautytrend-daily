@@ -1,0 +1,264 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Find Your Perfect 2026 Hairstyle | Free Hair Quiz | BeautyTrend Daily" description="Take our free 2026 hairstyle quiz to discover your perfect haircut based on your face shape, lifestyle, and hair type. Get personalized recommendations from our expert team.">
+  <main class="quiz-page">
+    <div class="quiz-hero">
+      <h1>✨ Find Your Perfect 2026 Hairstyle</h1>
+      <p>Answer 6 quick questions and we'll match you with your ideal haircut — recommended by our licensed stylists.</p>
+    </div>
+
+    <div class="quiz-container" id="quiz-app">
+      <!-- Progress Bar -->
+      <div class="quiz-progress-wrap">
+        <div class="quiz-progress-bar" id="progress-bar"></div>
+      </div>
+      <p class="quiz-step-label" id="step-label">Question 1 of 6</p>
+
+      <!-- Questions -->
+      <div id="quiz-questions">
+        <!-- Q1 -->
+        <div class="quiz-question active" data-q="0">
+          <h2>What is your face shape?</h2>
+          <div class="quiz-options">
+            <button class="quiz-opt" data-value="oval">🥚 Oval — balanced proportions</button>
+            <button class="quiz-opt" data-value="round">⭕ Round — fuller cheeks & chin</button>
+            <button class="quiz-opt" data-value="square">🟥 Square — strong jawline</button>
+            <button class="quiz-opt" data-value="heart">🫀 Heart — wider forehead, narrow chin</button>
+            <button class="quiz-opt" data-value="oblong">📏 Oblong — longer than wide</button>
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" data-q="1">
+          <h2>How much time do you spend styling daily?</h2>
+          <div class="quiz-options">
+            <button class="quiz-opt" data-value="minimal">⚡ Under 5 mins — wash & go</button>
+            <button class="quiz-opt" data-value="moderate">🕐 10–20 mins — some effort</button>
+            <button class="quiz-opt" data-value="dedicated">💅 30+ mins — I love styling</button>
+          </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" data-q="2">
+          <h2>What is your natural hair texture?</h2>
+          <div class="quiz-options">
+            <button class="quiz-opt" data-value="straight">〰️ Straight</button>
+            <button class="quiz-opt" data-value="wavy">🌊 Wavy</button>
+            <button class="quiz-opt" data-value="curly">🌀 Curly</button>
+            <button class="quiz-opt" data-value="coily">🍥 Coily / Kinky</button>
+          </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" data-q="3">
+          <h2>What vibe are you going for?</h2>
+          <div class="quiz-options">
+            <button class="quiz-opt" data-value="classic">👑 Classic & timeless</button>
+            <button class="quiz-opt" data-value="trendy">🔥 Trendy & bold</button>
+            <button class="quiz-opt" data-value="natural">🌿 Natural & effortless</button>
+            <button class="quiz-opt" data-value="edgy">⚡ Edgy & statement</button>
+          </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" data-q="4">
+          <h2>Preferred hair length?</h2>
+          <div class="quiz-options">
+            <button class="quiz-opt" data-value="short">✂️ Short (pixie, bob)</button>
+            <button class="quiz-opt" data-value="medium">📏 Medium (shoulder-length)</button>
+            <button class="quiz-opt" data-value="long">🌺 Long (past shoulder)</button>
+            <button class="quiz-opt" data-value="any">🤷 No preference</button>
+          </div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" data-q="5">
+          <h2>Any hair concerns?</h2>
+          <div class="quiz-options">
+            <button class="quiz-opt" data-value="volume">📢 I want more volume</button>
+            <button class="quiz-opt" data-value="frizz">💨 Frizz control needed</button>
+            <button class="quiz-opt" data-value="damage">🛡️ Hair is damaged / brittle</button>
+            <button class="quiz-opt" data-value="thinning">🪶 Thinning / fine hair</button>
+            <button class="quiz-opt" data-value="none">✨ No major concerns</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div id="quiz-result" class="quiz-result hidden">
+        <div class="result-badge">🎉 Your 2026 Style Match!</div>
+        <h2 id="result-title"></h2>
+        <p id="result-desc"></p>
+        <div id="result-links" class="result-links"></div>
+        <button class="quiz-restart-btn" id="restart-btn">🔄 Retake Quiz</button>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="quiz-cta-section">
+      <h3>Explore More 2026 Hairstyle Guides</h3>
+      <div class="quiz-cta-links">
+        <a href="/category/haircuts/">Haircuts 2026</a>
+        <a href="/category/hairstyles/">Hairstyles 2026</a>
+        <a href="/category/hair-color/">Hair Color Trends</a>
+        <a href="/category/mens-haircuts/">Men's Haircuts</a>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .quiz-page { font-family: system-ui, -apple-system, sans-serif; background: #fafafa; min-height: 100vh; }
+  .quiz-hero { background: linear-gradient(135deg, #1a1a2e 0%, #6366f1 100%); color: white; padding: 4rem 1.5rem 3rem; text-align: center; }
+  .quiz-hero h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; margin-bottom: 1rem; }
+  .quiz-hero p { font-size: 1.1rem; opacity: 0.9; max-width: 550px; margin: 0 auto; }
+  .quiz-container { max-width: 680px; margin: 3rem auto; padding: 0 1rem; }
+  .quiz-progress-wrap { background: #e5e7eb; border-radius: 999px; height: 8px; margin-bottom: 0.75rem; overflow: hidden; }
+  .quiz-progress-bar { height: 8px; background: linear-gradient(90deg, #6366f1, #d65d7a); border-radius: 999px; transition: width 0.4s ease; width: 0%; }
+  .quiz-step-label { text-align: center; color: #6366f1; font-weight: 600; font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .quiz-question { display: none; background: white; border-radius: 20px; padding: 2.5rem 2rem; box-shadow: 0 8px 30px rgba(99,102,241,0.12); }
+  .quiz-question.active { display: block; animation: fadeIn 0.3s ease; }
+  .quiz-question h2 { font-size: 1.4rem; color: #1a1a2e; margin-bottom: 1.5rem; text-align: center; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.75rem; }
+  .quiz-opt { background: #f8f9ff; border: 2px solid #e0e4ff; border-radius: 12px; padding: 1rem 1.5rem; font-size: 1rem; cursor: pointer; transition: all 0.2s; text-align: left; color: #333; }
+  .quiz-opt:hover { background: #6366f1; color: white; border-color: #6366f1; transform: translateX(4px); }
+  .quiz-result { background: white; border-radius: 20px; padding: 2.5rem 2rem; box-shadow: 0 8px 30px rgba(99,102,241,0.15); text-align: center; }
+  .quiz-result.hidden { display: none; }
+  .result-badge { display: inline-block; background: linear-gradient(135deg, #6366f1, #d65d7a); color: white; padding: 0.5rem 1.5rem; border-radius: 999px; font-size: 0.9rem; font-weight: 700; margin-bottom: 1rem; }
+  #result-title { font-size: 1.8rem; font-weight: 800; color: #1a1a2e; margin-bottom: 1rem; }
+  #result-desc { font-size: 1rem; color: #555; line-height: 1.7; margin-bottom: 1.5rem; }
+  .result-links { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; margin-bottom: 1.5rem; }
+  .result-links a { background: #6366f1; color: white; padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: opacity 0.2s; }
+  .result-links a:hover { opacity: 0.85; }
+  .quiz-restart-btn { background: transparent; border: 2px solid #6366f1; color: #6366f1; padding: 0.6rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+  .quiz-restart-btn:hover { background: #6366f1; color: white; }
+  .quiz-cta-section { max-width: 680px; margin: 0 auto 4rem; padding: 2rem 1rem; text-align: center; }
+  .quiz-cta-section h3 { font-size: 1.2rem; color: #1a1a2e; margin-bottom: 1rem; }
+  .quiz-cta-links { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+  .quiz-cta-links a { background: #1a1a2e; color: white; padding: 0.5rem 1.2rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 600; }
+  .quiz-cta-links a:hover { background: #6366f1; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 600px) {
+    .quiz-question { padding: 1.5rem 1rem; }
+    .quiz-hero { padding: 2.5rem 1rem 2rem; }
+  }
+</style>
+
+<script>
+  const answers = {};
+  let currentQ = 0;
+  const totalQ = 6;
+
+  const results = {
+    // Face + style combinations
+    oval_classic: {
+      title: "The Timeless Lob (Long Bob)",
+      desc: "Your oval face is the most versatile shape — lucky you! The 2026 lob (collarbone-length, with subtle layers) is your signature cut. It works for every occasion, from boardroom to brunch.",
+      links: [
+        { text: "2026 Lob Guide", href: "/articles/the-clavicut-collarbone-skimming-lob-haircut-2026/" },
+        { text: "All Haircuts", href: "/category/haircuts/" }
+      ]
+    },
+    oval_trendy: {
+      title: "Butterfly Cut with Curtain Bangs",
+      desc: "You're blessed with an oval face AND you want to turn heads! The Butterfly Cut with wispy curtain bangs is 2026's most viral haircut — perfect for you.",
+      links: [
+        { text: "Butterfly Cut Guide", href: "/category/haircuts/" },
+        { text: "Hair Trends 2026", href: "/category/hairstyles/" }
+      ]
+    },
+    round_any: {
+      title: "Long Layers with Side-Swept Bangs",
+      desc: "For round faces, length is your best friend. Long layers starting from the cheekbone plus side-swept bangs will elongate your face beautifully — a top 2026 recommendation from our stylists.",
+      links: [
+        { text: "Hairstyles for Round Faces", href: "/category/hairstyles/" },
+        { text: "Hair Color Tips", href: "/category/hair-color/" }
+      ]
+    },
+    square_any: {
+      title: "Soft Waves or Textured Lob",
+      desc: "Your strong jawline deserves soft, romantic waves or a textured lob with curtain bangs. These styles soften the angles beautifully — one of 2026's hottest looks.",
+      links: [
+        { text: "Textured Lob Guide", href: "/category/haircuts/" },
+        { text: "Hairstyle Trends", href: "/category/hairstyles/" }
+      ]
+    },
+    heart_any: {
+      title: "Chin-Length Bob or Curtain Bangs",
+      desc: "For heart-shaped faces, a chin-length bob or long curtain bangs balances your wider forehead and highlights your cheekbones. This is THE 2026 look for your face shape.",
+      links: [
+        { text: "Bob Styles 2026", href: "/category/haircuts/" },
+        { text: "Bang Styles", href: "/category/hairstyles/" }
+      ]
+    },
+    default: {
+      title: "The Korean Hush Cut 2026",
+      desc: "Based on your answers, we recommend the 2026 Korean Hush Cut — feathered layers, face-framing pieces, and a soft silhouette that flatters virtually every face shape and texture.",
+      links: [
+        { text: "View All Haircuts", href: "/category/haircuts/" },
+        { text: "Hair Color Pairings", href: "/category/hair-color/" }
+      ]
+    }
+  };
+
+  function getResult() {
+    const face = answers[0] || 'oval';
+    const vibe = answers[3] || 'classic';
+    const key = `${face}_${vibe}`;
+    return results[key] || results[`${face}_any`] || results.default;
+  }
+
+  function updateProgress() {
+    const pct = ((currentQ) / totalQ) * 100;
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('step-label').textContent = currentQ < totalQ
+      ? `Question ${currentQ + 1} of ${totalQ}`
+      : 'Your Results!';
+  }
+
+  function showQuestion(idx) {
+    document.querySelectorAll('.quiz-question').forEach(q => q.classList.remove('active'));
+    const qs = document.querySelectorAll('.quiz-question');
+    if (qs[idx]) qs[idx].classList.add('active');
+  }
+
+  function showResult() {
+    document.getElementById('quiz-questions').style.display = 'none';
+    const res = document.getElementById('quiz-result');
+    res.classList.remove('hidden');
+    const data = getResult();
+    document.getElementById('result-title').textContent = data.title;
+    document.getElementById('result-desc').textContent = data.desc;
+    const linksEl = document.getElementById('result-links');
+    linksEl.innerHTML = data.links.map(l => `<a href="${l.href}">${l.text}</a>`).join('');
+    document.getElementById('progress-bar').style.width = '100%';
+    document.getElementById('step-label').textContent = 'Your Results!';
+  }
+
+  document.querySelectorAll('.quiz-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const q = btn.closest('.quiz-question');
+      answers[currentQ] = btn.dataset.value;
+      currentQ++;
+      updateProgress();
+      if (currentQ >= totalQ) {
+        showResult();
+      } else {
+        showQuestion(currentQ);
+      }
+    });
+  });
+
+  document.getElementById('restart-btn').addEventListener('click', () => {
+    Object.keys(answers).forEach(k => delete answers[k]);
+    currentQ = 0;
+    document.getElementById('quiz-questions').style.display = '';
+    document.getElementById('quiz-result').classList.add('hidden');
+    updateProgress();
+    showQuestion(0);
+  });
+
+  updateProgress();
+</script>
