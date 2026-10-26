@@ -1,14 +1,9 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 
 export async function getStaticPaths() {
-  let articles = [];
-  try {
-    articles = await getCollection('es');
-  } catch (e) {
-    return [];
-  }
+  const articles = await getCollection('es');
   return articles.map(article => ({
     params: { slug: article.id.replace(/\.md$/, '') },
     props: { article }
@@ -16,7 +11,7 @@ export async function getStaticPaths() {
 }
 
 const { article } = Astro.props;
-const { Content } = await article.render();
+const { Content } = await render(article);
 const { title, description, heroImage, publishedAt, category, imageCredit, excerpt } = article.data;
 const publishDate = new Date(publishedAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
 ---
@@ -29,10 +24,10 @@ const publishDate = new Date(publishedAt).toLocaleDateString('es-ES', { year: 'n
     <div class="es-hero">
       {heroImage && <img src={heroImage} alt={title} class="es-hero-img" width="1200" height="675" loading="eager" />}
       <div class="es-hero-content">
-        <a href={`/es/categoria/${category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}/`} class="es-category-badge">{category}</a>
+        <a href={`/category/${category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}/`} class="es-category-badge">{category}</a>
         <h1>{title}</h1>
         <div class="es-meta">
-          <span>Por Sarah Chen | Cosmetóloga Licenciada</span>
+          <span>Por Sarah Chen | Cosmetologa Licenciada</span>
           <span>{publishDate}</span>
         </div>
       </div>
@@ -40,8 +35,8 @@ const publishDate = new Date(publishedAt).toLocaleDateString('es-ES', { year: 'n
 
     <div class="es-content container">
       <div class="es-lang-notice">
-        <span>🇬🇧</span>
-        <span>Read in English: <a href={`/articles/${article.data.translatedFrom || article.id.replace(/-es$/, '')}/`}>English version →</a></span>
+        <span>??</span>
+        <span>Read in English: <a href={`/articles/${article.data.translatedFrom || article.id.replace(/-es$/, '')}/`}>English version ?</a></span>
       </div>
       <Content />
     </div>
