@@ -14,7 +14,7 @@ keywords:
   - "beauty trends 2026"
 publishedAt: "2026-10-23"
 updatedAt: "2026-10-23"
-heroImage: "https://images.unsplash.com/photo-1512290900672-1f0230722391?auto=format&fit=crop&w=1200&h=675&q=85"
+heroImage: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=675&q=85"
 imageCredit: "Photo by Raphael Lovaski on Unsplash"
 youtube:
   - title: "Dermatologist’s Guide to Choosing the Right Serum for Your Skin"
