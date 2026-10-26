@@ -21,10 +21,9 @@ export async function getStaticPaths() {
   ];
 
   return categories.map((cat) => {
+    const normalize = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     const filtered = articles.filter((art) => {
-      const artCat = (art.data.category || '').toLowerCase().replace(/\s+/g, '-');
-      const catSlug = cat.slug.toLowerCase();
-      return artCat.includes(catSlug) || catSlug.includes(artCat);
+      return normalize(art.data.category) === normalize(cat.slug);
     });
 
     return {
